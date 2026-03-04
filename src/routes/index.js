@@ -3,14 +3,14 @@
 import express from 'express';
 import logRoutes from '../middlewares/LogRoutesMiddleware.js';
 import dotenv from 'dotenv';
-//import swaggerJSDoc from 'swagger-jsdoc';
-//import swaggerUI from 'swagger-ui-express';
-//import getSwaggerOptions from '../docs/config/head.js';
+import swaggerJSDoc from 'swagger-jsdoc';
+import swaggerUI from 'swagger-ui-express';
+import getSwaggerOptions from '../docs/config/head.js';
 import mongoose from 'mongoose';
 
 // Importação das rotas
 //import authRoutes from './authRoutes.js';
-//import usuarioRoutes from './usuarioRoutes.js';
+import usuarioRoutes from './usuarioRoutes.js';
 //import categoriaRoutes from './categoriaRoutes.js';
 //import restauranteRoutes from './restauranteRoutes.js';
 //import pratoRoutes from './pratoRoutes.js';
@@ -31,12 +31,12 @@ const routes = (app) => {
         res.redirect('/docs');
     });
 
-    //app.use(swaggerUI.serve);
-    //app.get('/docs', async (req, res, next) => {
-    //    const opts = await getSwaggerOptions();
-    //    const swaggerDocs = swaggerJSDoc(opts);
-    //    swaggerUI.setup(swaggerDocs)(req, res, next);
-    //});
+    app.use(swaggerUI.serve);
+    app.get('/docs', async (req, res, next) => {
+        const opts = await getSwaggerOptions();
+        const swaggerDocs = swaggerJSDoc(opts);
+        swaggerUI.setup(swaggerDocs)(req, res, next);
+    });
 
     // Health check endpoint
     app.get('/health', (req, res) => {
@@ -54,7 +54,7 @@ const routes = (app) => {
     app.use(
         express.json(),
         //authRoutes,
-        //usuarioRoutes,
+        usuarioRoutes,
         //categoriaRoutes,
         //restauranteRoutes,
         //pratoRoutes,
