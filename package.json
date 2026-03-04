@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "docker compose -f docker-compose.dev.yml up --build",
     "dev:local": "npx nodemon server.js",
-    "seed": "docker exec -it eventos-api node src/seeds/seeds.js",
+    "seed": "docker exec -it api-pedidos node src/seeds/seeds.js",
     "seed:local": "node src/seeds/seeds.js",
     "test": "jest --coverage --detectOpenHandles",
     "start:local": "node server.js",
@@ -30,7 +30,7 @@
     "mongoose-paginate-v2": "^1.9.1",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
-    "uuid": "^13.0.0",
+    "uuid": "^9.0.1",
     "winston": "^3.19.0",
     "winston-daily-rotate-file": "^5.0.0",
     "zod": "^4.3.6"
