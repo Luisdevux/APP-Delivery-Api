@@ -3,10 +3,12 @@
 import {
     CustomError,
     HttpStatusCodes,
-    messages
+    messages,
+    ensurePermission
 } from '../utils/helpers/index.js';
 import AuthHelper from '../utils/AuthHelper.js';
 import UsuarioRepository from '../repository/UsuarioRepository.js';
+import { cpf, cnpj } from 'cpf-cnpj-validator';
 
 class UsuarioService {
     constructor() {
@@ -37,26 +39,18 @@ class UsuarioService {
     }
 
     async atualizar(id, parsedData, req) {
-        // Não permitir alterar email e senha por esta rota
-        delete parsedData.email;
+        // Não permitir alterar senha por esta rota
         delete parsedData.senha;
 
         await this.ensureUserExists(id);
 
-        // Verificar se o usuário está atualizando a si mesmo ou é admin
         const usuarioLogado = await this.repository.buscarPorID(req.user_id);
-        const isAdmin = usuarioLogado.isAdmin;
-        const atualizarOutroUser = String(usuarioLogado._id) !== String(id);
-
-        if (!isAdmin && atualizarOutroUser) {
-            throw new CustomError({
-                statusCode: HttpStatusCodes.FORBIDDEN.code,
-                errorType: 'permissionError',
-                field: 'Usuário',
-                details: [],
-                customMessage: "Você não tem permissões para atualizar outro usuário."
-            });
-        }
+        const { isAdmin } = ensurePermission({
+            usuarioLogado,
+            targetId: id,
+            field: 'Usuário',
+            customMessage: 'Você não tem permissões para atualizar outro usuário.',
+        });
 
         // Não permitir alterar isAdmin se não for admin
         if (!isAdmin) {
@@ -71,39 +65,27 @@ class UsuarioService {
         await this.ensureUserExists(id);
 
         const usuarioLogado = await this.repository.buscarPorID(req.user_id);
-        const isAdmin = usuarioLogado.isAdmin;
-        const atualizarPropriaConta = String(usuarioLogado._id) === String(id);
-
-        // Somente admin ou o próprio usuário podem alterar status
-        if (!isAdmin && !atualizarPropriaConta) {
-            throw new CustomError({
-                statusCode: HttpStatusCodes.FORBIDDEN.code,
-                errorType: 'permissionError',
-                field: 'Usuário',
-                details: [],
-                customMessage: "Você não tem permissões para alterar o status deste usuário."
-            });
-        }
+        ensurePermission({
+            usuarioLogado,
+            targetId: id,
+            field: 'Usuário',
+            customMessage: 'Você não tem permissões para alterar o status deste usuário.',
+        });
 
         const data = await this.repository.atualizar(id, { status: parsedData.status });
         return data;
     }
 
     async deletar(id, req) {
-        const usuarioLogado = await this.repository.buscarPorID(req.user_id);
-        const isAdmin = usuarioLogado.isAdmin;
-
         await this.ensureUserExists(id);
 
-        if (!isAdmin && String(usuarioLogado._id) !== String(id)) {
-            throw new CustomError({
-                statusCode: HttpStatusCodes.FORBIDDEN.code,
-                errorType: 'permissionError',
-                field: 'Usuário',
-                details: [],
-                customMessage: "Você só pode deletar sua própria conta."
-            });
-        }
+        const usuarioLogado = await this.repository.buscarPorID(req.user_id);
+        ensurePermission({
+            usuarioLogado,
+            targetId: id,
+            field: 'Usuário',
+            customMessage: 'Você só pode deletar sua própria conta.',
+        });
 
         const data = await this.repository.deletar(id);
         return data;
@@ -126,16 +108,40 @@ class UsuarioService {
     }
 
     async validateCpfCnpj(cpf_cnpj, id = null) {
-        const usuarioExistente = await this.repository.buscarPorCpfCnpj(cpf_cnpj, id);
-        if (usuarioExistente) {
-            throw new CustomError({
-                statusCode: HttpStatusCodes.BAD_REQUEST.code,
-                errorType: 'validationError',
-                field: 'cpf_cnpj',
-                details: [{ path: 'cpf_cnpj', message: 'CPF/CNPJ já está em uso.' }],
-                customMessage: 'CPF/CNPJ já cadastrado.',
-            });
-        }
+      // Validar formato do CPF/CNPJ
+      if (!this.isValidCpfCnpj(cpf_cnpj)) {
+        throw new CustomError({
+          statusCode: HttpStatusCodes.BAD_REQUEST.code,
+          errorType: 'validationError',
+          field: 'cpf_cnpj',
+          details: [{ path: 'cpf_cnpj', message: 'CPF/CNPJ inválido.' }],
+          customMessage: 'CPF/CNPJ inválido.',
+        });
+      }
+
+      // Validar se já existe
+      const usuarioExistente = await this.repository.buscarPorCpfCnpj(cpf_cnpj, id);
+      if (usuarioExistente) {
+        throw new CustomError({
+          statusCode: HttpStatusCodes.BAD_REQUEST.code,
+          errorType: 'validationError',
+          field: 'cpf_cnpj',
+          details: [{ path: 'cpf_cnpj', message: 'CPF/CNPJ já está em uso.' }],
+          customMessage: 'CPF/CNPJ já cadastrado.',
+        });
+      }
+    }
+
+    isValidCpfCnpj(cpf_cnpj) {
+      const cleaned = cpf_cnpj.replace(/\D/g, '');
+
+      // CPF tem 11 dígitos, CNPJ tem 14
+      if (cleaned.length === 11) {
+        return cpf.isValid(cleaned);
+      } else if (cleaned.length === 14) {
+        return cnpj.isValid(cleaned);
+      }
+      return false;
     }
 
     async ensureUserExists(id) {
