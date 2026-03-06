@@ -26,13 +26,6 @@ class Restaurante {
                 enum: ["aberto", "fechado", "inativo"],
                 default: "fechado"
             },
-            endereco: {
-                cep: { type: String },
-                rua: { type: String },
-                numero: { type: String },
-                bairro: { type: String },
-                complemento: { type: String }
-            },
             categoria_ids: [{
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "categorias"

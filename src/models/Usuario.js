@@ -42,13 +42,6 @@ class Usuario {
                 type: String,
                 default: ""
             },
-            endereco: {
-                cep: { type: String },
-                rua: { type: String },
-                numero: { type: String },
-                bairro: { type: String },
-                complemento: { type: String }
-            },
             refreshtoken: {
                 type: String,
                 select: false

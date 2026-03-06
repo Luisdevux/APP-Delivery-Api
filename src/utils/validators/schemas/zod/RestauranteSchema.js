@@ -19,15 +19,6 @@ const RestauranteSchema = z.object({
             errorMap: () => ({ message: "Status deve ser 'aberto', 'fechado' ou 'inativo'." }),
         })
         .optional(),
-    endereco: z.object({
-        logradouro: z.string().min(2, 'Logradouro é obrigatório.'),
-        cep: z.string().regex(/^\d{5}-?\d{3}$/, 'CEP inválido.'),
-        bairro: z.string().min(1, 'Bairro é obrigatório.'),
-        numero: z.string().min(1, 'Número é obrigatório.'),
-        complemento: z.string().optional(),
-        cidade: z.string().min(2, 'Cidade é obrigatória.'),
-        estado: z.string().length(2, 'Estado deve conter 2 caracteres (UF).'),
-    }).optional(),
     categoria_ids: z
         .array(objectIdSchema)
         .min(1, 'Pelo menos uma categoria é obrigatória.')
