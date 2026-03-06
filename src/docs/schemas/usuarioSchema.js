@@ -21,16 +21,6 @@ const usuarioSchemas = {
             status: { type: "string", enum: ["ativo", "inativo"], example: "ativo" },
             isAdmin: { type: "boolean", example: false },
             foto_perfil: { type: "string", example: "" },
-            endereco: {
-                type: "object",
-                properties: {
-                    cep: { type: "string", example: "76800000" },
-                    rua: { type: "string", example: "Rua das Flores" },
-                    numero: { type: "string", example: "123" },
-                    bairro: { type: "string", example: "Centro" },
-                    complemento: { type: "string", example: "Apt 101" }
-                }
-            },
             createdAt: { type: "string", format: "date-time", example: "16/01/2025 12:00:00" },
             updatedAt: { type: "string", format: "date-time", example: "16/01/2025 12:00:00" }
         },
@@ -48,16 +38,6 @@ const usuarioSchemas = {
             status: { type: "string", enum: ["ativo", "inativo"], example: "ativo" },
             isAdmin: { type: "boolean", example: false },
             foto_perfil: { type: "string", example: "" },
-            endereco: {
-                type: "object",
-                properties: {
-                    cep: { type: "string", example: "76800000" },
-                    rua: { type: "string", example: "Rua das Flores" },
-                    numero: { type: "string", example: "123" },
-                    bairro: { type: "string", example: "Centro" },
-                    complemento: { type: "string", example: "Apt 101" }
-                }
-            },
             createdAt: { type: "string", format: "date-time", example: "16/01/2025 12:00:00" },
             updatedAt: { type: "string", format: "date-time", example: "16/01/2025 12:00:00" }
         },
@@ -72,17 +52,7 @@ const usuarioSchemas = {
             senha: { type: "string", description: "Senha segura", example: "Senha@123" },
             cpf_cnpj: { type: "string", description: "CPF ou CNPJ", example: "12345678900" },
             telefone: { type: "string", description: "Telefone de contato", example: "69999998888" },
-            isAdmin: { type: "boolean", description: "Define se é administrador", example: false },
-            endereco: {
-                type: "object",
-                properties: {
-                    cep: { type: "string", example: "76800000" },
-                    rua: { type: "string", example: "Rua das Flores" },
-                    numero: { type: "string", example: "123" },
-                    bairro: { type: "string", example: "Centro" },
-                    complemento: { type: "string", example: "Apt 101" }
-                }
-            }
+            isAdmin: { type: "boolean", description: "Define se é administrador", example: false }
         },
         required: ["nome", "email", "senha"],
         description: "Schema para criação de um usuário",
@@ -92,14 +62,7 @@ const usuarioSchemas = {
             senha: "Senha@123",
             cpf_cnpj: "12345678900",
             telefone: "69999998888",
-            isAdmin: false,
-            endereco: {
-                cep: "76800000",
-                rua: "Rua das Flores",
-                numero: "123",
-                bairro: "Centro",
-                complemento: "Apt 101"
-            }
+            isAdmin: false
         }
     },
 
@@ -108,28 +71,13 @@ const usuarioSchemas = {
         properties: {
             nome: { type: "string", description: "Nome completo", example: "João da Silva Pereira" },
             telefone: { type: "string", description: "Telefone de contato", example: "69999997777" },
-            foto_perfil: { type: "string", description: "URL da foto de perfil", example: "https://example.com/foto.jpg" },
-            endereco: {
-                type: "object",
-                properties: {
-                    cep: { type: "string", example: "76800001" },
-                    rua: { type: "string", example: "Rua Nova" },
-                    numero: { type: "string", example: "456" },
-                    bairro: { type: "string", example: "Jardim" },
-                    complemento: { type: "string", example: "Casa" }
-                }
-            }
+            foto_perfil: { type: "string", description: "URL da foto de perfil", example: "https://example.com/foto.jpg" }
         },
         required: [],
         description: "Schema para atualização parcial de um usuário",
         example: {
             nome: "João da Silva Pereira",
-            telefone: "69999997777",
-            endereco: {
-                rua: "Rua Nova",
-                numero: "456",
-                bairro: "Jardim"
-            }
+            telefone: "69999997777"
         }
     },
 
