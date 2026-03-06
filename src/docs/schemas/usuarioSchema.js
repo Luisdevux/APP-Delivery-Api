@@ -4,9 +4,9 @@ const usuarioSchemas = {
     UsuarioFiltro: {
         type: "object",
         properties: {
-            nome: { type: "string", description: "Filtra por nome", example: "João" },
-            email: { type: "string", format: "email", description: "Filtra por email", example: "joao@email.com" },
-            status: { type: "string", enum: ["ativo", "inativo"], description: "Filtra por status", example: "ativo" }
+            nome: { type: "string", description: "Filtra por nome" },
+            email: { type: "string", format: "email", description: "Filtra por email" },
+            status: { type: "string", enum: ["ativo", "inativo"], description: "Filtra por status" }
         }
     },
 
