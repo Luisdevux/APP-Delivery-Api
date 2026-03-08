@@ -49,6 +49,11 @@ class Restaurante {
             taxa_entrega: {
                 type: Number,
                 default: 0
+            },
+            cnpj: {
+                type: String,
+                unique: true,
+                sparse: true
             }
         }, {
             timestamps: true,

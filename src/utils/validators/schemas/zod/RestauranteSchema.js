@@ -3,6 +3,8 @@
 import { z } from 'zod';
 import objectIdSchema from './ObjectIdSchema.js';
 
+const cnpjRegex = /^\d{14}$/;
+
 const RestauranteSchema = z.object({
     nome: z
         .string()
@@ -39,6 +41,12 @@ const RestauranteSchema = z.object({
     taxa_entrega: z
         .number()
         .min(0, 'Taxa de entrega não pode ser negativa.')
+        .optional(),
+    cnpj: z
+        .string()
+        .refine((val) => cnpjRegex.test(val), {
+            message: 'CNPJ deve conter exatamente 14 dígitos numéricos.',
+        })
         .optional(),
 });
 

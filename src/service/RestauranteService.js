@@ -9,6 +9,7 @@ import {
 import RestauranteRepository from '../repository/RestauranteRepository.js';
 import UsuarioRepository from '../repository/UsuarioRepository.js';
 import Categoria from '../models/Categoria.js';
+import { cnpj } from 'cpf-cnpj-validator';
 
 class RestauranteService {
     constructor() {
@@ -47,6 +48,11 @@ class RestauranteService {
             await this.ensureCategoriasExistem(parsedData.categoria_ids);
         }
 
+        // Validar e verificar unicidade do CNPJ se fornecido
+        if (parsedData.cnpj) {
+            await this.validateCnpj(parsedData.cnpj);
+        }
+
         // Definir o dono_id como o usuário logado
         parsedData.dono_id = req.user_id;
 
@@ -75,6 +81,11 @@ class RestauranteService {
         // Verificar se as categorias informadas existem
         if (parsedData.categoria_ids && parsedData.categoria_ids.length > 0) {
             await this.ensureCategoriasExistem(parsedData.categoria_ids);
+        }
+
+        // Validar e verificar unicidade do CNPJ se fornecido
+        if (parsedData.cnpj) {
+            await this.validateCnpj(parsedData.cnpj, id);
         }
 
         // Não permitir alterar o dono_id
@@ -172,6 +183,32 @@ class RestauranteService {
             });
         }
     }
-}
 
-export default RestauranteService;
+    async validateCnpj(cnpjValue, id = null) {
+        if (!this.isValidCnpj(cnpjValue)) {
+            throw new CustomError({
+                statusCode: HttpStatusCodes.BAD_REQUEST.code,
+                errorType: 'validationError',
+                field: 'cnpj',
+                details: [{ path: 'cnpj', message: 'CNPJ inválido.' }],
+                customMessage: 'CNPJ inválido.',
+            });
+        }
+
+        const restauranteExistente = await this.repository.buscarPorCnpj(cnpjValue, id);
+        if (restauranteExistente) {
+            throw new CustomError({
+                statusCode: HttpStatusCodes.CONFLICT.code,
+                errorType: 'duplicateEntry',
+                field: 'cnpj',
+                details: [{ path: 'cnpj', message: 'CNPJ já está em uso.' }],
+                customMessage: 'CNPJ já cadastrado.',
+            });
+        }
+    }
+
+    isValidCnpj(cnpjValue) {
+        const cleaned = cnpjValue.replace(/\D/g, '');
+        return cleaned.length === 14 && cnpj.isValid(cleaned);
+    }
+}
