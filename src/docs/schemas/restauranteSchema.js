@@ -16,6 +16,7 @@ const restauranteSchemas = {
             nome: { type: "string", example: "Burger House" },
             foto_restaurante: { type: "string", example: "https://example.com/burger.jpg" },
             dono_id: { type: "string", example: "674fa21d79969d2172e78711" },
+            cnpj: { type: "string", example: "12345678000195" },
             status: { type: "string", enum: ["aberto", "fechado", "inativo"], example: "aberto" },
             categoria_ids: {
                 type: "array",
@@ -44,6 +45,7 @@ const restauranteSchemas = {
             nome: { type: "string", example: "Burger House" },
             foto_restaurante: { type: "string", example: "https://example.com/burger.jpg" },
             dono_id: { type: "string", example: "674fa21d79969d2172e78711" },
+            cnpj: { type: "string", example: "12345678000195" },
             status: { type: "string", enum: ["aberto", "fechado", "inativo"], example: "aberto" },
             categoria_ids: {
                 type: "array",
@@ -70,6 +72,7 @@ const restauranteSchemas = {
         properties: {
             nome: { type: "string", description: "Nome do restaurante", example: "Burger House" },
             foto_restaurante: { type: "string", description: "URL da foto do restaurante", example: "https://example.com/burger.jpg" },
+            cnpj: { type: "string", description: "CNPJ do restaurante (opcional, 14 dígitos)", example: "12345678000195" },
             categoria_ids: {
                 type: "array",
                 items: { type: "string" },
@@ -91,6 +94,7 @@ const restauranteSchemas = {
         example: {
             nome: "Burger House",
             foto_restaurante: "https://example.com/burger.jpg",
+            cnpj: "12345678000195",
             categoria_ids: ["674fa21d79969d2172e78712"],
             secoes_cardapio: ["Hambúrgueres", "Bebidas", "Sobremesas"],
             estimativa_entrega_min: 30,
