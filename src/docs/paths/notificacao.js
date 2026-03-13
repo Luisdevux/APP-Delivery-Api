@@ -59,7 +59,29 @@ const notificacaoRoutes = {
             + Resultado Esperado:
                 - HTTP 200 OK com a notificação atualizada.
         `,
-            
+            security: [{ bearerAuth: [] }],
+            parameters: [{
+                name: "id",
+                in: "path",
+                required: true,
+                schema: { type: "string" },
+                description: "ID da notificação"
+            }],
+            requestBody: {
+                content: {
+                    "application/json": {
+                        schema: { $ref: "#/components/schemas/NotificacaoLidaPatch" }
+                    }
+                }
+            },
+            responses: {
+                200: commonResponses[200]("#/components/schemas/NotificacaoDetalhes"),
+                400: commonResponses[400](),
+                401: commonResponses[401](),
+                404: commonResponses[404](),
+                409: commonResponses[409](),
+                498: commonResponses[498](),
+                500: commonResponses[500]()
             }
         }
     }
