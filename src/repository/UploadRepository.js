@@ -22,7 +22,7 @@ class UploadRepository {
                 'Content-Type': contentType,
             };
 
-            await garageClient.putObject(this.bucket, fileName, buffer.length, metaData);
+            await garageClient.putObject(this.bucket, fileName, buffer, buffer.length, metaData);
 
             // Gera a URL pública
             // Prioriza a variável GARAGE_PUBLIC_URL se definida, senão constrói a URL padrão do endpoint
@@ -65,7 +65,7 @@ class UploadRepository {
 
     /**
      * Deleta um arquivo do Garage.
-     * @param {string} fileName - Nome do arquivo (ou URL completa, o método tentará extrair o nome).
+     * @param {string} fileNameOrUrl - Nome do arquivo ou URL completa.
      * @returns {Promise<void>}
      */
     async deleteFile(fileNameOrUrl) {
@@ -80,8 +80,9 @@ class UploadRepository {
 
             await garageClient.removeObject(this.bucket, fileName);
         } catch (error) {
-            console.error('Erro ao deletar arquivo do Garage:', error);
-            // Não lança erro aqui para não quebrar fluxos de exclusão de registros no banco
+            console.error(`Erro ao deletar arquivo ${fileNameOrUrl} do Garage:`, error.message);
+            // IMPORTANTE: Lançar erro para que a lógica de retry em background do UploadService saiba que falhou
+            throw new Error('Falha ao deletar o arquivo do storage.');
         }
     }
 }

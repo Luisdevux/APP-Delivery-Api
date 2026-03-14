@@ -36,8 +36,11 @@ app.use(compression());
 // Habilitando o uso de json pelo express
 app.use(express.json());
 
-// Habilitando o uso de arquivos pelo express
-app.use(expressFileUpload());
+// Habilitando o uso de arquivos pelo express, com limite de segurança em memória de 50MB
+app.use(expressFileUpload({
+    limits: { fileSize: 50 * 1024 * 1024 }, // Trava em 50MB para não esgotar a RAM
+    abortOnLimit: true // Rejeita a requisição e poupa a banda automaticamente se passar
+}));
 
 // Configuração para o proxy confiar no cliente
 app.set('trust proxy', true);

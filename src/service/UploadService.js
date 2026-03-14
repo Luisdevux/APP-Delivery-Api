@@ -2,8 +2,8 @@ import { v4 as uuidv4 } from "uuid";
 import path from "path";
 import sharp from "sharp";
 import UploadRepository from "../repository/UploadRepository.js";
-import { CustomError } from "../utils/helpers/CustomError.js";
-import { HttpStatusCodes } from "../utils/helpers/HttpStatusCodes.js";
+import CustomError from "../utils/helpers/CustomError.js";
+import HttpStatusCodes from "../utils/helpers/HttpStatusCodes.js";
 
 class UploadService {
     constructor() {
@@ -18,7 +18,12 @@ class UploadService {
      */
     async processarImagem(file, options = {}) {
         if(!file) {
-            throw new CustomError('Nenhum arquivo enviado.', HttpStatusCodes.BAD_REQUEST.code);
+            throw new CustomError({
+                statusCode: HttpStatusCodes.BAD_REQUEST.code,
+                errorType: 'validationError',
+                field: 'file',
+                customMessage: 'Nenhum arquivo enviado.'
+            });
         }
 
         // Configurações padrão otimizadas para web
@@ -27,18 +32,44 @@ class UploadService {
         const quality = options.quality || 80;
         const fit = options.fit || 'inside'; // 'cover' para recortar, 'inside' para conter
 
-        // 1. Validação simples de extensão pela string
-        const ext = path.extname(file.name).slice(1).toLowerCase();
+        // 1. Dupla Validação: Extensão no Nome e MimeType no FileUpload
+        let ext = '';
+        if (file.name) {
+            ext = path.extname(file.name).slice(1).toLowerCase();
+        }
+        
         const validExts = ['jpg', 'jpeg', 'png', 'svg'];
+        const validMimeTypes = ['image/jpeg', 'image/png', 'image/svg+xml'];
 
-        if(!validExts.includes(ext)) {
-            throw new CustomError(`Extensão inválida (.${ext}). Permitido: ${validExts.join(', ')}.`, HttpStatusCodes.BAD_REQUEST.code);
+        // Checa Apenas a string
+        if (!validExts.includes(ext)) {
+            throw new CustomError({
+                statusCode: HttpStatusCodes.BAD_REQUEST.code,
+                errorType: 'validationError',
+                field: 'file',
+                customMessage: `Extensão inválida (.${ext}). Permitido: ${validExts.join(', ')}.`
+            });
+        }
+
+        // Checa o MimeType real do binário informado pelo Multipart Header
+        if (!validMimeTypes.includes(file.mimetype)) {
+            throw new CustomError({
+                statusCode: HttpStatusCodes.BAD_REQUEST.code,
+                errorType: 'validationError',
+                field: 'file',
+                customMessage: `Formato de arquivo inseguro ou adulterado. Mimetype recebido: ${file.mimetype}`
+            });
         }
 
         // 2. Validação de tamanho bruto (max 50MB)
         const MAX_BYTES = 50 * 1024 * 1024;
         if(file.size > MAX_BYTES) {
-            throw new CustomError(`Arquivo excede o tamanho máximo de ${MAX_BYTES / (1024 * 1024)}MB.`, HttpStatusCodes.BAD_REQUEST.code);
+            throw new CustomError({
+                statusCode: HttpStatusCodes.BAD_REQUEST.code,
+                errorType: 'validationError',
+                field: 'file',
+                customMessage: `Arquivo excede o tamanho máximo de ${MAX_BYTES / (1024 * 1024)}MB.`
+            });
         }
 
         // 3. Gera nome único
@@ -88,7 +119,15 @@ class UploadService {
             };
         } catch (error) {
             console.error(`Erro no processamento/upload: ${error.message}`);
-            throw new CustomError('Falha ao processar ou fazer upload do arquivo. Verifique se o arquivo é uma imagem válida.', HttpStatusCodes.INTERNAL_SERVER_ERROR.code);
+            // Relança CustomError diretamente
+            if (error instanceof CustomError) throw error;
+
+            throw new CustomError({
+                statusCode: HttpStatusCodes.INTERNAL_SERVER_ERROR.code,
+                errorType: 'processingError',
+                field: 'file',
+                customMessage: `Falha ao processar ou fazer upload do arquivo. Detalhe: ${error.message}`
+            });
         }
     }
 
@@ -106,7 +145,7 @@ class UploadService {
         if (imagemAntigaUrl && imagemAntigaUrl.trim() !== "") {
             // Não aguarda o delete terminar (fire and forget)
             this.deleteImagemComRetry(imagemAntigaUrl).catch(err =>
-                console.error(`Erro no processo de delete em background: ${err.message}`)
+                console.error(`Erro crítico no processo de delete em background: ${err.message}`)
             );
         }
 
@@ -125,9 +164,10 @@ class UploadService {
                 return; // Sucesso
             } catch (error) {
                 if (tentativa === maxTentativas) {
-                    console.warn(`Falha ao deletar imagem antiga após ${maxTentativas} tentativas: ${imagemUrl}. Erro: ${error.message}`);
+                    console.error(`Falha ao deletar imagem antiga após ${maxTentativas} tentativas: ${imagemUrl}. Erro: ${error.message}`);
                 } else {
                     const delayMs = Math.pow(2, tentativa - 1) * 1000;
+                    console.warn(`Tentativa ${tentativa} de deletar ${imagemUrl} falhou. Tentando novamente em ${delayMs}ms...`);
                     await new Promise(resolve => setTimeout(resolve, delayMs));
                 }
             }
@@ -159,7 +199,7 @@ class UploadService {
             } catch (error) {
                 // Rollback: deleta as já enviadas
                 for (const { url } of resultados) {
-                    await this.deleteImagem(url).catch(e => console.warn(`Erro no rollback de delete da imagem: ${e.message}`));
+                    await this.deleteImagem(url).catch(e => console.error(`Erro no rollback de delete da imagem: ${e.message}`));
                 }
                 throw error;
             }
@@ -181,7 +221,7 @@ class UploadService {
         // Deleta antigas em background
         if (imagensAntigas && imagensAntigas.length > 0) {
             imagensAntigas.forEach(url => {
-                if(url) this.deleteImagemComRetry(url).catch(e => console.warn(`Erro delete background da imagem: ${e.message}`));
+                if(url) this.deleteImagemComRetry(url).catch(e => console.error(`Erro delete background da imagem: ${e.message}`));
             });
         }
 
