@@ -28,9 +28,9 @@ class Notificacao {
                 type: String,
                 required: [true, "A mensagem é obrigatória!"]
             },
-            lida: {
-                type: Boolean,
-                default: false
+            lida_em: {
+                type: Date,
+                default: null
             }
         }, {
             timestamps: true,
