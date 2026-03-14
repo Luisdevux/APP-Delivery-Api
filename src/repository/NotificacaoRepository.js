@@ -43,6 +43,13 @@ class NotificacaoRepository {
         return resultado;
     }
 
+    async listar(req) {
+        if (!req.user_id) {
+            throw new Error('Usuário não autenticado');
+        }
+        return await this.listarPorUsuario(req.user_id, req);
+    }
+
     async criar(dadosNotificacao) {
         const notificacao = new this.modelNotificacao(dadosNotificacao);
         return await notificacao.save();
@@ -51,7 +58,10 @@ class NotificacaoRepository {
     async marcarComoLida(id) {
         const notificacao = await this.modelNotificacao.findByIdAndUpdate(
             id,
-            { lida: true },
+            { 
+                lida: true,
+                lida_em: new Date()
+            },
             { new: true }
         );
         if (!notificacao) {
