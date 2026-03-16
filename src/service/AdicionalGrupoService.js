@@ -35,9 +35,14 @@ class AdicionalGrupoService {
         return grupo;
     }
 
-    async listar(restauranteId, req) {
-        await this.restauranteRepository.buscarPorID(restauranteId);
-        const data = await this.grupoRepository.listarPorRestaurante(restauranteId);
+    async buscarPorID(id) {
+        const data = await this.grupoRepository.buscarPorID(id);
+        return data;
+    }
+
+    async listarPorPrato(pratoId) {
+        const prato = await this.pratoRepository.buscarPorID(pratoId);
+        const data = await this.grupoRepository.listarPorIds(prato.adicionais_grupo_ids);
         return data;
     }
 

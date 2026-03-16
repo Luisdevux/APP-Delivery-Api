@@ -33,6 +33,14 @@ class AdicionalGrupoRepository {
         return grupos;
     }
 
+    async listarPorIds(ids) {
+        const grupos = await this.modelAdicionalGrupo.find({
+            _id: { $in: ids },
+            ativo: true
+        }).sort({ nome: 1 });
+        return grupos;
+    }
+
     async criar(dadosGrupo) {
         const grupo = new this.modelAdicionalGrupo(dadosGrupo);
         return await grupo.save();

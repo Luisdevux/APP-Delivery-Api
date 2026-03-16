@@ -3,32 +3,31 @@
 import commonResponses from "../schemas/swaggerCommonResponses.js";
 
 const adicionalGrupoRoutes = {
-    "/adicionais/grupos/{restauranteId}": {
+    "/adicionais/grupos/prato/{pratoId}": {
         get: {
             tags: ["Adicionais - Grupos"],
-            summary: "Lista grupos de adicionais de um restaurante",
+            summary: "Lista grupos de adicionais de um prato",
             description: `
-        + Caso de uso: Permitir a consulta dos grupos de adicionais cadastrados para um restaurante.
+        + Caso de uso: Permitir a consulta dos grupos de adicionais vinculados a um prato específico.
 
         + Função de Negócio:
-            - Permitir ao front-end obter a lista de grupos de adicionais de um restaurante.
+            - Permitir ao front-end obter todos os grupos de adicionais de um prato.
             + Recebe como path parameter:
-                - **restauranteId**: identificador do restaurante (MongoDB ObjectId).
+                - **pratoId**: identificador do prato (MongoDB ObjectId).
 
         + Regras de Negócio:
             - Rota pública, não requer autenticação.
-            - Retorna todos os grupos vinculados ao restaurante informado.
+            - Retorna apenas grupos com status ativo.
 
         + Resultado Esperado:
-            - 200 OK com corpo conforme schema **GrupoListagem**, contendo:
-                • **items**: array de grupos de adicionais.
+            - 200 OK com corpo conforme schema **GrupoListagem**.
       `,
             parameters: [{
-                name: "restauranteId",
+                name: "pratoId",
                 in: "path",
                 required: true,
                 schema: { type: "string" },
-                description: "ID do restaurante"
+                description: "ID do prato"
             }],
             responses: {
                 200: commonResponses[200]("#/components/schemas/GrupoListagem"),
@@ -82,6 +81,38 @@ const adicionalGrupoRoutes = {
     },
 
     "/adicionais/grupos/{id}": {
+        get: {
+            tags: ["Adicionais - Grupos"],
+            summary: "Busca um grupo de adicionais pelo ID",
+            description: `
+            + Caso de uso: Permitir a consulta de um grupo de adicionais específico pelo seu ID.
+
+            + Função de Negócio:
+                - Permitir ao front-end obter os detalhes de um grupo de adicionais.
+                + Recebe como path parameter:
+                    - **id**: identificador do grupo (MongoDB ObjectId).
+
+            + Regras de Negócio:
+                - Rota pública, não requer autenticação.
+                - Retorna erro 404 se o grupo não for encontrado.
+
+            + Resultado Esperado:
+                - 200 OK com corpo conforme schema **GrupoDetalhes**.
+        `,
+            parameters: [{
+                name: "id",
+                in: "path",
+                required: true,
+                schema: { type: "string" },
+                description: "ID do grupo de adicionais"
+            }],
+            responses: {
+                200: commonResponses[200]("#/components/schemas/GrupoDetalhes"),
+                400: commonResponses[400](),
+                404: commonResponses[404](),
+                500: commonResponses[500]()
+            }
+        },
         patch: {
             tags: ["Adicionais - Grupos"],
             summary: "Atualiza parcialmente um grupo de adicionais",

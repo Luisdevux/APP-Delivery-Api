@@ -10,7 +10,8 @@ const router = express.Router();
 const adicionalGrupoController = new AdicionalGrupoController();
 
 router
-    .get('/adicionais/grupos/:restauranteId', asyncWrapper(adicionalGrupoController.listar.bind(adicionalGrupoController)))
+    .get('/adicionais/grupos/prato/:pratoId', asyncWrapper(adicionalGrupoController.listarPorPrato.bind(adicionalGrupoController)))
+    .get('/adicionais/grupos/:id', asyncWrapper(adicionalGrupoController.buscarPorID.bind(adicionalGrupoController)))
     .post('/adicionais/grupos', AuthMiddleware, asyncWrapper(adicionalGrupoController.criar.bind(adicionalGrupoController)))
     .patch('/adicionais/grupos/:id', AuthMiddleware, asyncWrapper(adicionalGrupoController.atualizar.bind(adicionalGrupoController)))
     .delete('/adicionais/grupos/:id', AuthMiddleware, asyncWrapper(adicionalGrupoController.deletar.bind(adicionalGrupoController)));

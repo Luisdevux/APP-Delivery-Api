@@ -17,11 +17,19 @@ class AdicionalGrupoController {
         this.service = new AdicionalGrupoService();
     }
 
-    async listar(req, res) {
-        const { restauranteId } = req.params;
-        IdSchema.parse(restauranteId);
+    async listarPorPrato(req, res) {
+        const { pratoId } = req.params;
+        IdSchema.parse(pratoId);
 
-        const data = await this.service.listar(restauranteId, req);
+        const data = await this.service.listarPorPrato(pratoId);
+        return CommonResponse.success(res, data);
+    }
+
+    async buscarPorID(req, res) {
+        const { id } = req.params;
+        IdSchema.parse(id);
+
+        const data = await this.service.buscarPorID(id);
         return CommonResponse.success(res, data);
     }
 
