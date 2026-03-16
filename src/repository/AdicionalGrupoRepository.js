@@ -41,6 +41,13 @@ class AdicionalGrupoRepository {
         return grupos;
     }
 
+    async buscarPorNomeEntreIds(nome, ids) {
+        return await this.modelAdicionalGrupo.findOne({
+            nome,
+            _id: { $in: ids }
+        });
+    }
+
     async criar(dadosGrupo) {
         const grupo = new this.modelAdicionalGrupo(dadosGrupo);
         return await grupo.save();
