@@ -8,6 +8,7 @@ import {
 } from '../utils/helpers/index.js';
 import RestauranteRepository from '../repository/RestauranteRepository.js';
 import UsuarioRepository from '../repository/UsuarioRepository.js';
+import UploadService from './UploadService.js';
 import Categoria from '../models/Categoria.js';
 import { cnpj } from 'cpf-cnpj-validator';
 
@@ -15,16 +16,49 @@ class RestauranteService {
     constructor() {
         this.repository = new RestauranteRepository();
         this.usuarioRepository = new UsuarioRepository();
+        this.uploadService = new UploadService();
     }
 
     async listar(req) {
+        // Listagem pública geral (para o APP Mobile, sem amarrar ao usuário logado)
         const data = await this.repository.listar(req);
         return data;
     }
 
-    async criar(parsedData, req) {
+    async listarMeus(req) {
+        // Listagem privada para o Painel Web/Dashboard
+        if (!req?.user_id) {
+            throw new CustomError({
+                statusCode: HttpStatusCodes.UNAUTHORIZED.code,
+                errorType: 'unauthorized',
+                field: 'Autenticação',
+                details: [],
+                customMessage: 'Usuário não autenticado. Faça login para listar seus restaurantes.',
+            });
+        }
 
-        //Eduardo: O Middleware já faz essa veirificação
+        const usuarioLogado = await this.ensureUsuarioExists(req.user_id);
+
+        // Isso foi necessário porque, quando eu tentava “injetar” o filtro usando o `req` do Express (principalmente no `req.query`),
+        // em algumas versões ele pode ser read-only (só getter) ou não se comportar como um objeto comum.
+        // Aí o `dono_id` não ficava aplicado como esperado e a consulta acabava indo sem filtro (voltando todos os restaurantes),
+        // em vez de retornar só os do usuário logado.
+        // Tentei resolver de outras formas, mas normalizar os dados foi o que funcionou sem gambiarra.
+        const query = { ...(req?.query || {}) };
+        if (!usuarioLogado?.isAdmin) {
+            query.dono_id = req.user_id;
+        }
+
+        const reqNormalizado = {
+            params: req?.params || {},
+            query,
+        };
+
+        const data = await this.repository.listar(reqNormalizado);
+        return data;
+    }
+
+    async criar(parsedData, req) {
         // Validar se user_id está presente na requisição
         if (!req.user_id) {
             throw new CustomError({
@@ -36,7 +70,6 @@ class RestauranteService {
             });
         }
 
-        //Eduardo: Essa validação não faz sentido, se o usuario logado é o dono do restaurante, não tem porque verificar se o dono existe.
         // Verificar se o usuário dono existe
         await this.ensureUsuarioExists(req.user_id);
 
@@ -110,6 +143,65 @@ class RestauranteService {
 
         const data = await this.repository.deletar(id);
         return data;
+    }
+
+    async fotoUpload(id, file, req) {
+        const restaurante = await this.ensureRestauranteExists(id);
+
+        const usuarioLogado = await this.ensureUsuarioExists(req.user_id);
+        const donoId = String(restaurante.dono_id ?._id || restaurante.dono_id);
+        ensurePermission({
+          usuarioLogado,
+          targetId: donoId,
+          field: 'Restaurante',
+          customMessage: 'Você não tem permissões para alterar a foto deste restaurante.',
+        });
+
+        // O 'processarImagem' já
+        const uploadResult = await this.uploadService.substituirImagem(
+          file,
+          restaurante.foto_restaurante,
+          { fit: 'cover', quality: 80 }
+        );
+
+        // Atualiza a URL no banco de dados
+        await this.repository.atualizar(id, { foto_restaurante: uploadResult.url });
+
+        return uploadResult;
+    }
+
+    async fotoDelete(id, req) {
+      const restaurante = await this.ensureRestauranteExists(id);
+
+      const usuarioLogado = await this.ensureUsuarioExists(req.user_id);
+      const donoId = String(restaurante.dono_id ?._id || restaurante.dono_id);
+      ensurePermission({
+        usuarioLogado,
+        targetId: donoId,
+        field: 'Restaurante',
+        customMessage: 'Você não tem permissões para deletar a foto deste restaurante.',
+      });
+
+      if(!restaurante.foto_restaurante) {
+        throw new CustomError({
+          statusCode: HttpStatusCodes.NOT_FOUND.code,
+          errorType: 'resourceNotFound',
+          field: 'foto_restaurante',
+          customMessage: 'Este restaurante não possui uma foto para remover.',
+        });
+      }
+
+      const urlAntiga = restaurante.foto_restaurante;
+
+      // 1. Remove a URL do banco de dados imediatamente (resposta rápida, evita carregamento desnecessário da imagem)
+      await this.repository.atualizar(id, { foto_restaurante: "" });
+
+      // 2. Deleta do Garage em background com retry (se falhar, apenas loga e não impacta o usuário)
+      this.uploadService.deleteImagemComRetry(urlAntiga).catch(err => {
+          console.error(`Erro isolado na exclusão da foto em background: ${err.message}`);
+      });
+
+      return true;
     }
 
     // === Métodos auxiliares de validação ===

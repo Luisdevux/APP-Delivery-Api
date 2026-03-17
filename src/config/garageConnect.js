@@ -12,7 +12,8 @@ const requiredGarageVars = [
 
 for (const varName of requiredGarageVars) {
     if (!process.env[varName]) {
-      throw new Error(`Váriavel de ambiente do Garage não está definida: ${varName}`);
+        console.error(`GARAGE: Variável de ambiente '${varName}' não está definida. Verifique seu arquivo .env ou docker-compose.`);
+        process.exit(1);
     }
 };
 
