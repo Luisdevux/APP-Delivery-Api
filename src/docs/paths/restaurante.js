@@ -89,6 +89,55 @@ const restauranteRoutes = {
         }
     },
 
+    "/restaurantes/meus": {
+        get: {
+            tags: ["Restaurantes"],
+            summary: "Lista os restaurantes do usuário logado (dono ou admin)",
+            description: `
+        + Caso de uso: Permitir que o proprietário liste seus restaurantes cadastrados na plataforma.
+
+        + Função de Negócio:
+            - Permitir ao front-end administrativo obter uma lista dos restaurantes do usuário autenticado.
+            + Recebe como query parameters (opcionais):
+                • filtros: nome e status.
+
+        + Regras de Negócio:
+            - Rota privada, requer autenticação.
+            - Os restaurantes retornados serão limitados ao \`dono_id\` referente ao id do usuário logado.
+            - Suporte a paginação via parâmetros page e limite.
+
+        + Resultado Esperado:
+            - 200 OK com corpo conforme schema **RestauranteListagem**, contendo:
+                • **items**: array de restaurantes.
+      `,
+            security: [{ bearerAuth: [] }],
+            parameters: [
+                ...generateParameters(restauranteSchemas.RestauranteFiltro),
+                {
+                    name: "limite",
+                    in: "query",
+                    schema: { type: "number" },
+                    required: false,
+                    description: "Quantidade de registros por página"
+                },
+                {
+                    name: "page",
+                    in: "query",
+                    schema: { type: "number" },
+                    required: false,
+                    description: "Número da página"
+                }
+            ],
+            responses: {
+                200: commonResponses[200]("#/components/schemas/RestauranteListagem"),
+                400: commonResponses[400](),
+                401: commonResponses[401](),
+                498: commonResponses[498](),
+                500: commonResponses[500]()
+            }
+        }
+    },
+
     "/restaurantes/{id}": {
         get: {
             tags: ["Restaurantes"],

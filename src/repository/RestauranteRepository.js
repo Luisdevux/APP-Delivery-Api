@@ -53,8 +53,13 @@ class RestauranteRepository {
 
     async listar(req) {
         const { id } = req.params;
+        const dono_id = req.query?.dono_id; // Pega o dono_id se injetado pelas camadas superiores
+
         if (id) {
-            const data = await this.modelRestaurante.findById(id)
+            const filtroId = { _id: id };
+            if (dono_id) filtroId.dono_id = dono_id;
+
+            const data = await this.modelRestaurante.findOne(filtroId)
                 .populate('categoria_ids')
                 .populate('dono_id', 'nome email');
             if (!data) {
@@ -76,6 +81,7 @@ class RestauranteRepository {
         if (nome) filtros.nome = { $regex: nome, $options: 'i' };
         if (categoria) filtros.categoria_ids = { $in: [categoria] };
         if (status) filtros.status = status;
+        if (dono_id) filtros.dono_id = dono_id;
 
         const options = {
             page: parseInt(page, 10),

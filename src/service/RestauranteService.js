@@ -20,7 +20,41 @@ class RestauranteService {
     }
 
     async listar(req) {
+        // Listagem pública geral (para o APP Mobile, sem amarrar ao usuário logado)
         const data = await this.repository.listar(req);
+        return data;
+    }
+
+    async listarMeus(req) {
+        // Listagem privada para o Painel Web/Dashboard
+        if (!req?.user_id) {
+            throw new CustomError({
+                statusCode: HttpStatusCodes.UNAUTHORIZED.code,
+                errorType: 'unauthorized',
+                field: 'Autenticação',
+                details: [],
+                customMessage: 'Usuário não autenticado. Faça login para listar seus restaurantes.',
+            });
+        }
+
+        const usuarioLogado = await this.ensureUsuarioExists(req.user_id);
+
+        // Isso foi necessário porque, quando eu tentava “injetar” o filtro usando o `req` do Express (principalmente no `req.query`),
+        // em algumas versões ele pode ser read-only (só getter) ou não se comportar como um objeto comum.
+        // Aí o `dono_id` não ficava aplicado como esperado e a consulta acabava indo sem filtro (voltando todos os restaurantes),
+        // em vez de retornar só os do usuário logado.
+        // Tentei resolver de outras formas, mas normalizar os dados foi o que funcionou sem gambiarra.
+        const query = { ...(req?.query || {}) };
+        if (!usuarioLogado?.isAdmin) {
+            query.dono_id = req.user_id;
+        }
+
+        const reqNormalizado = {
+            params: req?.params || {},
+            query,
+        };
+
+        const data = await this.repository.listar(reqNormalizado);
         return data;
     }
 

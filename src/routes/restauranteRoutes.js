@@ -11,6 +11,7 @@ const restauranteController = new RestauranteController();
 
 router
     .get('/restaurantes', asyncWrapper(restauranteController.listar.bind(restauranteController)))
+    .get('/restaurantes/meus', AuthMiddleware, asyncWrapper(restauranteController.listarMeus.bind(restauranteController)))
     .get('/restaurantes/:id', asyncWrapper(restauranteController.listar.bind(restauranteController)))
     .post('/restaurantes', AuthMiddleware, asyncWrapper(restauranteController.criar.bind(restauranteController)))
     .patch('/restaurantes/:id', AuthMiddleware, asyncWrapper(restauranteController.atualizar.bind(restauranteController)))

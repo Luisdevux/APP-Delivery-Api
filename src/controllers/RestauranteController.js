@@ -26,12 +26,12 @@ class RestauranteController {
       RestauranteIdSchema.parse(id);
     }
 
-    const query = req?.query;
+    let query = req?.query || {};
     if (Object.keys(query).length !== 0) {
-      await RestauranteQuerySchema.parseAsync(query);
+      query = await RestauranteQuerySchema.parseAsync(query);
     }
 
-    const data = await this.service.listar(req);
+    const data = await this.service.listar({ params: req.params, query });
 
     // Mensagem contextualizada para listagem
     if (id) {
@@ -46,8 +46,8 @@ class RestauranteController {
     // Resultado paginado - verificar se há resultados
     const totalDocs = data?.totalDocs ?? data?.docs?.length ?? 0;
     if (totalDocs === 0) {
-      const temFiltros =
-        query && (query.nome || query.categoria || query.status);
+      const { nome, categoria, status } = query;
+      const temFiltros = nome || categoria || status;
       const mensagem = temFiltros
         ? 'Nenhum restaurante encontrado com os filtros informados.'
         : 'Nenhum restaurante cadastrado.';
@@ -64,6 +64,36 @@ class RestauranteController {
       data,
       HttpStatusCodes.OK.code,
       `${totalDocs} restaurante(s) encontrado(s).`,
+    );
+  }
+
+  async listarMeus(req, res) {
+    let query = req?.query || {};
+    if (Object.keys(query).length !== 0) {
+      query = await RestauranteQuerySchema.parseAsync(query);
+    }
+
+    const data = await this.service.listarMeus({
+      params: req.params,
+      query,
+      user_id: req.user_id,
+    });
+
+    const totalDocs = data?.totalDocs ?? data?.docs?.length ?? 0;
+    if (totalDocs === 0) {
+      return CommonResponse.success(
+        res,
+        data,
+        HttpStatusCodes.OK.code,
+        'Nenhum restaurante encontrado sob sua gestão.',
+      );
+    }
+
+    return CommonResponse.success(
+      res,
+      data,
+      HttpStatusCodes.OK.code,
+      `${totalDocs} restaurante(s) encontrado(s) sob sua gestão.`,
     );
   }
 
