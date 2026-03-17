@@ -10,6 +10,14 @@ class NotificacaoService {
         this.repository = new NotificacaoRepository();
     }
 
+    async criar(dadosNotificacao) {
+        return await this.repository.criar(dadosNotificacao);
+    }
+
+    async buscarPorId(id) {
+        return await this.repository.buscarPorID(id);
+    }
+
     async listarMinhasNotificacoes(req) {
         if (!req.user_id) {
             throw new CustomError({
@@ -35,9 +43,9 @@ class NotificacaoService {
             });
         }
 
-    const notificacao = await this.repository.buscarPorID(id);
+        const notificacao = await this.repository.buscarPorID(id);
 
-        // o destinatário  marcar a notificação como lida
+        // Apenas o destinatário pode marcar a notificação como lida
         if (String(notificacao.usuario_id) !== String(req.user_id)) {
             throw new CustomError({
                 statusCode: HttpStatusCodes.FORBIDDEN.code,
@@ -50,6 +58,33 @@ class NotificacaoService {
 
         const updated = await this.repository.marcarComoLida(id);
         return updated;
+    }
+
+    async deletar(id, req) {
+        if (!req.user_id) {
+            throw new CustomError({
+                statusCode: HttpStatusCodes.UNAUTHORIZED.code,
+                errorType: 'unauthorized',
+                field: 'Autenticação',
+                details: [],
+                customMessage: 'Usuário não autenticado. Faça login para deletar notificações.'
+            });
+        }
+
+        const notificacao = await this.repository.buscarPorID(id);
+
+        // Apenas o destinatário pode deletar sua notificação
+        if (String(notificacao.usuario_id) !== String(req.user_id)) {
+            throw new CustomError({
+                statusCode: HttpStatusCodes.FORBIDDEN.code,
+                errorType: 'permissionError',
+                field: 'Notificação',
+                details: [],
+                customMessage: 'Você não tem permissão para deletar esta notificação.'
+            });
+        }
+
+        return await this.repository.deletar(id);
     }
 }
 

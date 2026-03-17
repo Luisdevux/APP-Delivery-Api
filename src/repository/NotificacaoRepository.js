@@ -24,11 +24,24 @@ class NotificacaoRepository {
     }
 
     async listarPorUsuario(usuarioId, req) {
-        const { lida, page = 1 } = req.query;
+        const { lida, tipo, page = 1 } = req.query;
         const limite = Math.min(parseInt(req.query.limite, 10) || 10, 100);
 
         const filtros = { usuario_id: usuarioId };
-        if (lida !== undefined) filtros.lida = lida === 'true';
+        
+        // Filtrar por notificações lidas (lida_em !== null) ou não lidas (lida_em === null)
+        if (lida !== undefined) {
+            if (lida === 'true') {
+                filtros.lida_em = { $ne: null };
+            } else if (lida === 'false') {
+                filtros.lida_em = null;
+            }
+        }
+
+        // Filtrar por tipo
+        if (tipo !== undefined && tipo !== '') {
+            filtros.tipo = tipo;
+        }
 
         const options = {
             page: parseInt(page, 10),
@@ -56,14 +69,35 @@ class NotificacaoRepository {
     }
 
     async marcarComoLida(id) {
-        const notificacao = await this.modelNotificacao.findByIdAndUpdate(
+        // Busca a notificação primeiro para verificar se já foi lida
+        const notificacao = await this.modelNotificacao.findById(id);
+        if (!notificacao) {
+            throw new CustomError({
+                statusCode: 404,
+                errorType: 'resourceNotFound',
+                field: 'Notificação',
+                details: [],
+                customMessage: messages.error.resourceNotFound('Notificação')
+            });
+        }
+
+        // Se já foi lida, retorna a notificação
+        if (notificacao.lida_em !== null) {
+            return notificacao;
+        }
+
+        // Marca como lida
+        const notificacaoAtualizada = await this.modelNotificacao.findByIdAndUpdate(
             id,
-            { 
-                lida: true,
-                lida_em: new Date()
-            },
+            { lida_em: new Date() },
             { new: true }
         );
+        
+        return notificacaoAtualizada;
+    }
+
+    async deletar(id) {
+        const notificacao = await this.modelNotificacao.findByIdAndDelete(id);
         if (!notificacao) {
             throw new CustomError({
                 statusCode: 404,
