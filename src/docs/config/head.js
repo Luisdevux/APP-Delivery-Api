@@ -31,8 +31,8 @@ const getSwaggerOptions = async () => {
         import.meta.url).href + t)).default;
     const adicionalGrupoPaths = (await import(new URL("../paths/adicionalGrupo.js",
         import.meta.url).href + t)).default;
-    //const adicionalOpcaoPaths = (await import(new URL("../paths/adicionalOpcao.js",
-    //    import.meta.url).href + t)).default;
+    const adicionalOpcaoPaths = (await import(new URL("../paths/adicionalOpcao.js",
+        import.meta.url).href + t)).default;
     const pedidoPaths = (await import(new URL("../paths/pedido.js",
         import.meta.url).href + t)).default;
     // const avaliacaoPaths = (await import(new URL("../paths/avaliacao.js",
@@ -55,8 +55,8 @@ const getSwaggerOptions = async () => {
         import.meta.url).href + t)).default;
     const adicionalGrupoSchemas = (await import(new URL("../schemas/adicionalGrupoSchema.js",
         import.meta.url).href + t)).default;
-    //const adicionalOpcaoSchemas = (await import(new URL("../schemas/adicionalOpcaoSchema.js",
-    //    import.meta.url).href + t)).default;
+    const adicionalOpcaoSchemas = (await import(new URL("../schemas/adicionalOpcaoSchema.js",
+        import.meta.url).href + t)).default;
     const pedidoSchemas = (await import(new URL("../schemas/pedidoSchema.js",
         import.meta.url).href + t)).default;
     // const avaliacaoSchemas = (await import(new URL("../schemas/avaliacaoSchema.js",
@@ -106,10 +106,10 @@ const getSwaggerOptions = async () => {
                     name: "Adicionais - Grupos",
                     description: "Rotas para gestão de grupos de adicionais"
                 },
-                //{
-                //    name: "Adicionais - Opções",
-                //    description: "Rotas para gestão de opções de adicionais"
-                //},
+                {
+                    name: "Adicionais - Opções",
+                    description: "Rotas para gestão de opções de adicionais"
+                },
                 {
                     name: "Pedidos",
                     description: "Rotas para o gerenciamento de pedidos de delivery"
@@ -131,7 +131,7 @@ const getSwaggerOptions = async () => {
                 ...enderecoPaths,
                 ...pratoPaths,
                 ...adicionalGrupoPaths,
-                //...adicionalOpcaoPaths,
+                ...adicionalOpcaoPaths,
                 ...pedidoPaths,
                 // ...avaliacaoPaths,
                 // ...notificacaoPaths,
@@ -152,7 +152,7 @@ const getSwaggerOptions = async () => {
                     ...enderecoSchemas,
                     ...pratoSchemas,
                     ...adicionalGrupoSchemas,
-                    //...adicionalOpcaoSchemas,
+                    ...adicionalOpcaoSchemas,
                     ...pedidoSchemas,
                     // ...avaliacaoSchemas,
                     // ...notificacaoSchemas
