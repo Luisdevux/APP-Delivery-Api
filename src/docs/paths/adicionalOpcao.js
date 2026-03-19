@@ -160,8 +160,8 @@ const adicionalOpcaoRoutes = {
             }
         }
     },
-    
-    "/adicionais/{id}/foto": {
+
+    "/adicionais/opcoes/{id}/foto": {
         post: {
             tags: ["Adicionais - Opções"],
             summary: "Faz upload/atualiza a foto de um adicional",
