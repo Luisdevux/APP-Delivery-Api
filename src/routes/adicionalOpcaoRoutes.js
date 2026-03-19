@@ -14,8 +14,8 @@ router
     .post('/adicionais/opcoes', AuthMiddleware, asyncWrapper(adicionalOpcaoController.criar.bind(adicionalOpcaoController)))
     .patch('/adicionais/opcoes/:id', AuthMiddleware, asyncWrapper(adicionalOpcaoController.atualizar.bind(adicionalOpcaoController)))
     .delete('/adicionais/opcoes/:id', AuthMiddleware, asyncWrapper(adicionalOpcaoController.deletar.bind(adicionalOpcaoController)))
-    .post('/adicionais/:id/foto', AuthMiddleware, asyncWrapper(adicionalOpcaoController.fotoUpload.bind(adicionalOpcaoController)))
-    .delete('/adicionais/:id/foto', AuthMiddleware, asyncWrapper(adicionalOpcaoController. fotoDelete.bind(adicionalOpcaoController)));
+    .post('/adicionais/opcoes/:id/foto', AuthMiddleware, asyncWrapper(adicionalOpcaoController.fotoUpload.bind(adicionalOpcaoController)))
+    .delete('/adicionais/opcoes/:id/foto', AuthMiddleware, asyncWrapper(adicionalOpcaoController.fotoDelete.bind(adicionalOpcaoController)));
 
 
 export default router;

@@ -4,8 +4,8 @@ const adicionalGrupoSchemas = {
     GrupoFiltro: {
         type: "object",
         properties: {
-            nome: { type: "string", description: "Filtra por nome", example: "Molhos" },
-            tipo: { type: "string", enum: ["adicional", "variacao"], description: "Filtra por tipo", example: "adicional" }
+            nome: { type: "string", description: "Filtra por nome" },
+            tipo: { type: "string", enum: ["adicional", "variacao"], description: "Filtra por tipo" }
         }
     },
 
