@@ -4,8 +4,8 @@ const categoriaSchemas = {
     CategoriaFiltro: {
         type: "object",
         properties: {
-            nome: { type: "string", description: "Filtra por nome", example: "Lanches" },
-            ativo: { type: "boolean", description: "Filtra por status ativo", example: true }
+            nome: { type: "string", description: "Filtra por nome" },
+            ativo: { type: "boolean", description: "Filtra por status ativo" }
         }
     },
 
@@ -14,7 +14,7 @@ const categoriaSchemas = {
         properties: {
             _id: { type: "string", example: "674fa21d79969d2172e78710" },
             nome: { type: "string", example: "Lanches" },
-            img: { type: "string", example: "https://example.com/lanches.jpg" },
+            icone_categoria: { type: "string", example: "https://example.com/lanches.jpg" },
             ativo: { type: "boolean", example: true },
             createdAt: { type: "string", format: "date-time", example: "16/01/2025 12:00:00" },
             updatedAt: { type: "string", format: "date-time", example: "16/01/2025 12:00:00" }
@@ -27,7 +27,7 @@ const categoriaSchemas = {
         properties: {
             _id: { type: "string", example: "674fa21d79969d2172e78710" },
             nome: { type: "string", example: "Lanches" },
-            img: { type: "string", example: "https://example.com/lanches.jpg" },
+            icone_categoria: { type: "string", example: "https://example.com/lanches.jpg" },
             ativo: { type: "boolean", example: true },
             createdAt: { type: "string", format: "date-time", example: "16/01/2025 12:00:00" },
             updatedAt: { type: "string", format: "date-time", example: "16/01/2025 12:00:00" }
@@ -39,13 +39,13 @@ const categoriaSchemas = {
         type: "object",
         properties: {
             nome: { type: "string", description: "Nome da categoria", example: "Lanches" },
-            img: { type: "string", description: "URL da imagem da categoria", example: "https://example.com/lanches.jpg" }
+            icone_categoria: { type: "string", description: "URL da imagem da categoria", example: "https://example.com/lanches.jpg" }
         },
         required: ["nome"],
         description: "Schema para criação de uma categoria",
         example: {
             nome: "Lanches",
-            img: "https://example.com/lanches.jpg"
+            icone_categoria: "https://example.com/lanches.jpg"
         }
     },
 
@@ -53,14 +53,14 @@ const categoriaSchemas = {
         type: "object",
         properties: {
             nome: { type: "string", description: "Nome da categoria", example: "Hambúrgueres" },
-            img: { type: "string", description: "URL da imagem", example: "https://example.com/hamburgueres.jpg" },
+            icone_categoria: { type: "string", description: "URL da imagem", example: "https://example.com/hamburgueres.jpg" },
             ativo: { type: "boolean", description: "Status ativo/inativo", example: true }
         },
         required: [],
         description: "Schema para atualização parcial de uma categoria",
         example: {
             nome: "Hambúrgueres",
-            img: "https://example.com/hamburgueres.jpg"
+            icone_categoria: "https://example.com/hamburgueres.jpg"
         }
     }
 };

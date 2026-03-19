@@ -174,7 +174,7 @@ const adicionalOpcaoRoutes = {
                     - \`file\` ou \`imagem\`: O arquivo da foto.
 
             + Regras de Negócio:
-                - Máximo 50MB (definido no serviço) e tipos restritos (jpg, png).
+                - Máximo 50MB (definido no serviço) e tipos restritos (jpg, png, jpeg, svg).
                 - O tamanho da imagem vai ser otimizado com redimensionamento para 800x800px e compressão.
                 - A imagem antiga é apagada automaticamente.
                 - O próprio dono do restaurante pode realizar esta ação.
