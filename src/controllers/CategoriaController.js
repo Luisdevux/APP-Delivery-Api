@@ -6,6 +6,7 @@ import {
     CategoriaUpdateSchema
 } from '../utils/validators/schemas/zod/CategoriaSchema.js';
 import { IdSchema } from '../utils/validators/schemas/zod/querys/CommonQuerySchema.js';
+import { CategoriaQuerySchema } from '../utils/validators/schemas/zod/querys/CategoriaQuerySchema.js';
 import {
     CommonResponse,
     CustomError,
@@ -21,6 +22,11 @@ class CategoriaController {
         const id = req?.params?.id;
         if (id) {
             IdSchema.parse(id);
+        } else {
+            const query = req?.query;
+            if (query && Object.keys(query).length !== 0) {
+                await CategoriaQuerySchema.parseAsync(query);
+            }
         }
 
         const data = await this.service.listar(req);
@@ -39,7 +45,7 @@ class CategoriaController {
 
         const parsedData = CategoriaUpdateSchema.parse(req.body);
         const data = await this.service.atualizar(id, parsedData, req);
-        return CommonResponse.success(res, data, 200, 'Categoria atualizada com sucesso.');
+        return CommonResponse.success(res, data, HttpStatusCodes.OK.code, 'Categoria atualizada com sucesso.');
     }
 
     async deletar(req, res) {
@@ -47,7 +53,7 @@ class CategoriaController {
         IdSchema.parse(id);
 
         const data = await this.service.deletar(id, req);
-        return CommonResponse.success(res, data, 200, 'Categoria excluída com sucesso.');
+        return CommonResponse.success(res, data, HttpStatusCodes.OK.code, 'Categoria excluída com sucesso.');
     }
 
     async fotoUpload(req, res) {
