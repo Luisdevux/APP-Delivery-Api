@@ -19,4 +19,11 @@ class AvaliacaoController {
         const data = await this.service.listarPorRestaurante(restauranteId, req);
         return CommonResponse.success(res, data);
     }
+  async criar(req, res) {
+        const parsedData = AvaliacaoSchema.parse(req.body);
+        const data = await this.service.criar(parsedData, req);
+        return CommonResponse.created(res, data);
+    }
 }
+
+export default AvaliacaoController;
