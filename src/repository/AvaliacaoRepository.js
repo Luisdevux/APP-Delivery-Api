@@ -51,4 +51,19 @@ class AvaliacaoRepository {
         });
         return resultado;
     }
+
+    async calcularMediaRestaurante(restauranteId) {
+        const resultado = await this.modelAvaliacao.aggregate([
+            { $match: { restaurante_id: restauranteId } },
+            { $group: { _id: null, media: { $avg: "$nota" } } }
+        ]);
+        return resultado.length > 0 ? Math.round(resultado[0].media * 10) / 10 : 0;
+    }
+
+    async criar(dadosAvaliacao) {
+        const avaliacao = new this.modelAvaliacao(dadosAvaliacao);
+        return await avaliacao.save();
+    }
 }
+
+export default AvaliacaoRepository;
