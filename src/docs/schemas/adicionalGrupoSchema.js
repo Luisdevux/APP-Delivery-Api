@@ -20,8 +20,8 @@ const adicionalGrupoSchemas = {
             min: { type: "number", example: 0 },
             max: { type: "number", example: 3 },
             ativo: { type: "boolean", example: true },
-            createdAt: { type: "string", format: "date-time", example: "16/01/2025 12:00:00" },
-            updatedAt: { type: "string", format: "date-time", example: "16/01/2025 12:00:00" }
+            createdAt: { type: "string", format: "date-time", example: "2025-01-16T12:00:00.000Z" },
+            updatedAt: { type: "string", format: "date-time", example: "2025-01-16T12:00:00.000Z" }
         },
         description: "Schema para listagem de grupos de adicionais"
     },
@@ -37,8 +37,8 @@ const adicionalGrupoSchemas = {
             min: { type: "number", example: 0 },
             max: { type: "number", example: 3 },
             ativo: { type: "boolean", example: true },
-            createdAt: { type: "string", format: "date-time", example: "16/01/2025 12:00:00" },
-            updatedAt: { type: "string", format: "date-time", example: "16/01/2025 12:00:00" }
+            createdAt: { type: "string", format: "date-time", example: "2025-01-16T12:00:00.000Z" },
+            updatedAt: { type: "string", format: "date-time", example: "2025-01-16T12:00:00.000Z" }
         },
         description: "Schema para detalhes de um grupo de adicionais"
     },
@@ -53,7 +53,7 @@ const adicionalGrupoSchemas = {
             min: { type: "number", description: "Mínimo de seleções", example: 0 },
             max: { type: "number", description: "Máximo de seleções", example: 3 }
         },
-        required: ["prato_id", "nome"],
+        required: ["prato_id", "nome", "tipo"],
         description: "Schema para criação de um grupo de adicionais",
         example: {
             prato_id: "674fa21d79969d2172e78712",

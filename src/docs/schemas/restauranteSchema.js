@@ -5,7 +5,8 @@ const restauranteSchemas = {
         type: "object",
         properties: {
             nome: { type: "string", description: "Filtra por nome" },
-            status: { type: "string", enum: ["aberto", "fechado", "inativo"], description: "Filtra por status" }
+            status: { type: "string", enum: ["aberto", "fechado", "inativo"], description: "Filtra por status" },
+            categoria: { type: "string", description: "Filtra pela tag de categoria (ex: Lanches) - ObjectId ou string separada por virgula" }
         }
     },
 
@@ -14,9 +15,9 @@ const restauranteSchemas = {
         properties: {
             _id: { type: "string", example: "674fa21d79969d2172e78710" },
             nome: { type: "string", example: "Burger House" },
-            foto_restaurante: { type: "string", example: "https://example.com/burger.jpg" },
+            foto_restaurante: { type: "string", example: "https://rango.web.fslab.dev/eb167c13-3fc8-4c17-91ed-f331005a.jpeg" },
             dono_id: { type: "string", example: "674fa21d79969d2172e78711" },
-            cnpj: { type: "string", example: "12345678000195" },
+            cnpj: { type: "string", example: "23321946000100" },
             status: { type: "string", enum: ["aberto", "fechado", "inativo"], example: "aberto" },
             categoria_ids: {
                 type: "array",
@@ -32,8 +33,8 @@ const restauranteSchemas = {
             estimativa_entrega_max: { type: "number", example: 50 },
             avaliacao_media: { type: "number", example: 4.5 },
             taxa_entrega: { type: "number", example: 5.99 },
-            createdAt: { type: "string", format: "date-time", example: "16/01/2025 12:00:00" },
-            updatedAt: { type: "string", format: "date-time", example: "16/01/2025 12:00:00" }
+            createdAt: { type: "string", format: "date-time", example: "2025-01-16T12:00:00.000Z" },
+            updatedAt: { type: "string", format: "date-time", example: "2025-01-16T12:00:00.000Z" }
         },
         description: "Schema para listagem de restaurantes"
     },
@@ -43,9 +44,9 @@ const restauranteSchemas = {
         properties: {
             _id: { type: "string", example: "674fa21d79969d2172e78710" },
             nome: { type: "string", example: "Burger House" },
-            foto_restaurante: { type: "string", example: "https://example.com/burger.jpg" },
+            foto_restaurante: { type: "string", example: "https://rango.web.fslab.dev/eb167c13-3fc8-4c17-91ed-f331005a.jpeg" },
             dono_id: { type: "string", example: "674fa21d79969d2172e78711" },
-            cnpj: { type: "string", example: "12345678000195" },
+            cnpj: { type: "string", example: "23321946000100" },
             status: { type: "string", enum: ["aberto", "fechado", "inativo"], example: "aberto" },
             categoria_ids: {
                 type: "array",
@@ -61,8 +62,8 @@ const restauranteSchemas = {
             estimativa_entrega_max: { type: "number", example: 50 },
             avaliacao_media: { type: "number", example: 4.5 },
             taxa_entrega: { type: "number", example: 5.99 },
-            createdAt: { type: "string", format: "date-time", example: "16/01/2025 12:00:00" },
-            updatedAt: { type: "string", format: "date-time", example: "16/01/2025 12:00:00" }
+            createdAt: { type: "string", format: "date-time", example: "2025-01-16T12:00:00.000Z" },
+            updatedAt: { type: "string", format: "date-time", example: "2025-01-16T12:00:00.000Z" }
         },
         description: "Schema para detalhes de um restaurante"
     },
@@ -71,8 +72,8 @@ const restauranteSchemas = {
         type: "object",
         properties: {
             nome: { type: "string", description: "Nome do restaurante", example: "Burger House" },
-            foto_restaurante: { type: "string", description: "URL da foto do restaurante", example: "https://example.com/burger.jpg" },
-            cnpj: { type: "string", description: "CNPJ do restaurante (opcional, 14 dígitos)", example: "12345678000195" },
+            foto_restaurante: { type: "string", description: "URL da foto do restaurante", example: "https://rango.web.fslab.dev/eb167c13-3fc8-4c17-91ed-f331005a.jpeg" },
+            cnpj: { type: "string", description: "CNPJ do restaurante (opcional, 14 dígitos)", example: "23321946000100" },
             categoria_ids: {
                 type: "array",
                 items: { type: "string" },
@@ -93,8 +94,8 @@ const restauranteSchemas = {
         description: "Schema para criação de um restaurante",
         example: {
             nome: "Burger House",
-            foto_restaurante: "https://example.com/burger.jpg",
-            cnpj: "12345678000195",
+            foto_restaurante: "https://rango.web.fslab.dev/eb167c13-3fc8-4c17-91ed-f331005a.jpeg",
+            cnpj: "23321946000100",
             categoria_ids: ["674fa21d79969d2172e78712"],
             secoes_cardapio: ["Hambúrgueres", "Bebidas", "Sobremesas"],
             estimativa_entrega_min: 30,
@@ -107,7 +108,7 @@ const restauranteSchemas = {
         type: "object",
         properties: {
             nome: { type: "string", example: "Burger House Premium" },
-            foto_restaurante: { type: "string", example: "https://example.com/burger2.jpg" },
+            foto_restaurante: { type: "string", example: "https://rango.web.fslab.dev/eb167c13-3fc8-4c17-91ed-f331005a.jpeg" },
             status: { type: "string", enum: ["aberto", "fechado", "inativo"], example: "aberto" },
             categoria_ids: {
                 type: "array",
