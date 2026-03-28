@@ -23,7 +23,7 @@ const notificacaoRoutes = {
             security: [{ bearerAuth: [] }],
             parameters: [
                 { name: "lida", in: "query", schema: { type: "boolean" }, required: false, description: "Filtra por status de leitura" },
-                { name: "usuario_id", in: "query", schema: { type: "string" }, required: false, description: "Filtra por usuário (requer permissões)" },
+                { name: "tipo", in: "query", schema: { type: "string" }, required: false, description: "Filtra por tipo (ex: pedido_confirmado, geral)" },
                 { name: "limite", in: "query", schema: { type: "number" }, required: false, description: "Registros por página" },
                 { name: "page", in: "query", schema: { type: "number" }, required: false, description: "Número da página" }
             ],
