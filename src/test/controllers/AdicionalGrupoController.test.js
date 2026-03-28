@@ -85,6 +85,43 @@ describe('AdicionalGrupoController', () => {
 
             await expect(controller.listarPorPrato(mockRequest, mockResponse)).rejects.toThrow(error);
         });
+        
+          it('deve retornar vazio quando não há adicionais', async () => {
+            const pratoId = 'prato-456';
+            mockRequest.params = { pratoId };
+            mockService.listarPorPrato.mockResolvedValue([]);
 
+            await controller.listarPorPrato(mockRequest, mockResponse);
+
+            expect(mockService.listarPorPrato).toHaveBeenCalledWith(pratoId);
+            expect(CommonResponse.success).toHaveBeenCalledWith(mockResponse, []);
+        });
+    });
+
+    describe('buscarPorID', () => {
+        it('deve buscar um adicional grupo por ID com sucesso', async () => {
+            const id = 'grupo-123';
+            const mockData = { id, nome: 'Grupo Premium', prato_id: 'prato-123' };
+
+            mockRequest.params = { id };
+            mockService.buscarPorID.mockResolvedValue(mockData);
+
+            await controller.buscarPorID(mockRequest, mockResponse);
+
+            expect(CommonQuerySchema.IdSchema.parse).toHaveBeenCalledWith(id);
+            expect(mockService.buscarPorID).toHaveBeenCalledWith(id);
+            expect(CommonResponse.success).toHaveBeenCalledWith(mockResponse, mockData);
+        });
+
+        it('deve lançar erro ao buscar com ID inválido', async () => {
+            const error = new Error('ID inválido');
+            CommonQuerySchema.IdSchema.parse.mockImplementation(() => {
+                throw error;
+            });
+
+            mockRequest.params = { id: 'invalid' };
+
+            await expect(controller.buscarPorID(mockRequest, mockResponse)).rejects.toThrow(error);
+        });
     });
 });
