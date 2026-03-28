@@ -39,8 +39,29 @@ class NotificacaoController {
     }
 
     async listarMinhas(req, res) {
+        const query = req?.query || {};
         const data = await this.service.listarMinhasNotificacoes(req);
-        return CommonResponse.success(res, data);
+        
+        const totalDocs = data?.totalDocs ?? data?.docs?.length ?? 0;
+        if (totalDocs === 0) {
+            const temFiltros = query && (query.lida !== undefined || query.tipo);
+            const mensagem = temFiltros
+                ? 'Nenhuma notificação encontrada com os filtros informados.'
+                : 'Nenhuma notificação encontrada.';
+            return CommonResponse.success(
+                res,
+                data,
+                HttpStatusCodes.OK.code,
+                mensagem
+            );
+        }
+
+        return CommonResponse.success(
+            res,
+            data,
+            HttpStatusCodes.OK.code,
+            `${totalDocs} notificação(ões) encontrada(s).`
+        );
     }
 
     async marcarComoLida(req, res) {

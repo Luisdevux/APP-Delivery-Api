@@ -17,7 +17,23 @@ class AvaliacaoController {
         IdSchema.parse(restauranteId);
 
         const data = await this.service.listarPorRestaurante(restauranteId, req);
-        return CommonResponse.success(res, data);
+        
+        const totalDocs = data?.totalDocs ?? data?.docs?.length ?? 0;
+        if (totalDocs === 0) {
+            return CommonResponse.success(
+                res,
+                data,
+                HttpStatusCodes.OK.code,
+                'Nenhuma avaliação encontrada para este restaurante.'
+            );
+        }
+
+        return CommonResponse.success(
+            res,
+            data,
+            HttpStatusCodes.OK.code,
+            `${totalDocs} avaliação(ões) encontrada(s).`
+        );
     }
   async criar(req, res) {
         const parsedData = AvaliacaoSchema.parse(req.body);
