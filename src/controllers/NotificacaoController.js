@@ -16,11 +16,11 @@ class NotificacaoController {
         try {
             const dadosValidados = NotificacaoSchema.parse(req.body);
             const data = await this.service.criar(dadosValidados);
-            return CommonResponse.success(res, data, 201, 'Notificação criada com sucesso.');
+            return CommonResponse.success(res, data, HttpStatusCodes.CREATED.code, 'Notificação criada com sucesso.');
         } catch (erro) {
             if (erro.name === 'ZodError') {
                 throw new CustomError({
-                    statusCode: 400,
+                    statusCode: HttpStatusCodes.BAD_REQUEST.code,
                     errorType: 'validationError',
                     field: 'Notificação',
                     details: erro.errors,
@@ -34,7 +34,7 @@ class NotificacaoController {
         const { id } = req.params;
         IdSchema.parse(id);
 
-        const data = await this.service.buscarPorId(id);
+        const data = await this.service.buscarPorId(id, req);
         return CommonResponse.success(res, data);
     }
 
@@ -48,7 +48,7 @@ class NotificacaoController {
         IdSchema.parse(id);
 
         const data = await this.service.marcarComoLida(id, req);
-        return CommonResponse.success(res, data, 200, 'Notificação marcada como lida.');
+        return CommonResponse.success(res, data, HttpStatusCodes.OK.code, 'Notificação marcada como lida.');
     }
 
     async deletar(req, res) {
@@ -56,7 +56,7 @@ class NotificacaoController {
         IdSchema.parse(id);
 
         await this.service.deletar(id, req);
-        return CommonResponse.success(res, null, 204, 'Notificação deletada com sucesso.');
+        return CommonResponse.success(res, null, HttpStatusCodes.OK.code, 'Notificação deletada com sucesso.');
     }
 }
 

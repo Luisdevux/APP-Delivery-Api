@@ -14,8 +14,30 @@ class NotificacaoService {
         return await this.repository.criar(dadosNotificacao);
     }
 
-    async buscarPorId(id) {
-        return await this.repository.buscarPorID(id);
+    async buscarPorId(id, req) {
+        if (!req.user_id) {
+            throw new CustomError({
+                statusCode: HttpStatusCodes.UNAUTHORIZED.code,
+                errorType: 'unauthorized',
+                field: 'Autenticação',
+                details: [],
+                customMessage: 'Usuário não autenticado.'
+            });
+        }
+
+        const notificacao = await this.repository.buscarPorID(id);
+
+        if (String(notificacao.usuario_id) !== String(req.user_id)) {
+            throw new CustomError({
+                statusCode: HttpStatusCodes.FORBIDDEN.code,
+                errorType: 'permissionError',
+                field: 'Notificação',
+                details: [],
+                customMessage: 'Você não tem permissão para acessar esta notificação.'
+            });
+        }
+
+        return notificacao;
     }
 
     async listarMinhasNotificacoes(req) {

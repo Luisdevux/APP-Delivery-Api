@@ -9,9 +9,9 @@ import {
 import PedidoRepository from '../repository/PedidoRepository.js';
 import RestauranteRepository from '../repository/RestauranteRepository.js';
 import PratoRepository from '../repository/PratoRepository.js';
-// import AdicionalGrupoRepository from '../repository/AdicionalGrupoRepository.js';
-// import AdicionalOpcaoRepository from '../repository/AdicionalOpcaoRepository.js';
-// import NotificacaoRepository from '../repository/NotificacaoRepository.js';
+import AdicionalGrupoRepository from '../repository/AdicionalGrupoRepository.js';
+import AdicionalOpcaoRepository from '../repository/AdicionalOpcaoRepository.js';
+import NotificacaoRepository from '../repository/NotificacaoRepository.js';
 import UsuarioRepository from '../repository/UsuarioRepository.js';
 
 // Fluxo de status permitido
@@ -33,9 +33,9 @@ class PedidoService {
         this.repository = new PedidoRepository();
         this.restauranteRepository = new RestauranteRepository();
         this.pratoRepository = new PratoRepository();
-        // this.grupoRepository = new AdicionalGrupoRepository();
-        // this.opcaoRepository = new AdicionalOpcaoRepository();
-        // this.notificacaoRepository = new NotificacaoRepository();
+        this.grupoRepository = new AdicionalGrupoRepository();
+        this.opcaoRepository = new AdicionalOpcaoRepository();
+        this.notificacaoRepository = new NotificacaoRepository();
         this.usuarioRepository = new UsuarioRepository();
     }
 
