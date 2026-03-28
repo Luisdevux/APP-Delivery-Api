@@ -53,8 +53,14 @@ class AvaliacaoRepository {
     }
 
     async calcularMediaRestaurante(restauranteId) {
+        let objectIdFilter = restauranteId;
+        if (typeof restauranteId === 'string') {
+            const mongoose = (await import('mongoose')).default;
+            objectIdFilter = new mongoose.Types.ObjectId(restauranteId);
+        }
+
         const resultado = await this.modelAvaliacao.aggregate([
-            { $match: { restaurante_id: restauranteId } },
+            { $match: { restaurante_id: objectIdFilter } },
             { $group: { _id: null, media: { $avg: "$nota" } } }
         ]);
         return resultado.length > 0 ? Math.round(resultado[0].media * 10) / 10 : 0;
