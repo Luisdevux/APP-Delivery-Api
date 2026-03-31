@@ -140,29 +140,16 @@ const authSchemas = {
     RequisicaoRedefinirSenha: {
         type: "object",
         properties: {
-            email: {
-                type: "string",
-                format: "email",
-                description: "Email do usuário",
-                example: "admin@delivery.com"
-            },
-            codigo: {
-                type: "string",
-                description: "Código de recuperação recebido por email",
-                example: "abc123def456"
-            },
-            novaSenha: {
+            senha: {
                 type: "string",
                 description: "Nova senha (mín. 8 chars, 1 maiúscula, 1 minúscula, 1 número, 1 especial)",
                 example: "NovaSenha@456"
             }
         },
-        required: ["email", "codigo", "novaSenha"],
+        required: ["senha"],
         description: "Schema para redefinição de senha com código",
         example: {
-            email: "joao.silva@email.com",
-            codigo: "abc123def456",
-            novaSenha: "NovaSenha@456"
+            senha: "NovaSenha@456"
         }
     },
 
