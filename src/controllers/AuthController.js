@@ -27,7 +27,7 @@ class AuthController {
     }
 
     logout = async (req, res) => {
-        const token = req.body.access_token || req.headers.authorization?.split(' ')[1];
+        const token = req.body?.access_token || req.headers.authorization?.split(' ')[1];
 
         if (!token || token === 'null' || token === 'undefined') {
             throw new CustomError({
@@ -58,7 +58,7 @@ class AuthController {
     }
 
     refresh = async (req, res) => {
-        const token = req.body.refresh_token;
+        const token = req.body?.refresh_token;
 
         if (!token || token === 'null' || token === 'undefined') {
             throw new CustomError({
@@ -95,7 +95,7 @@ class AuthController {
 
     atualizarSenhaToken = async (req, res) => {
         const tokenRecuperacao = req.query.token || req.params.token || null;
-        const senha = req.body.senha || null;
+        const senha = req.body?.senha || null;
 
         if (!tokenRecuperacao) {
             throw new CustomError({
@@ -122,7 +122,7 @@ class AuthController {
     }
 
     signup = async (req, res) => {
-        const parsedData = UsuarioSchema.parse(req.body);
+        const parsedData = UsuarioSchema.parse(req.body || {});
 
         // Ao cadastrar via signup, nunca é admin
         parsedData.isAdmin = false;
