@@ -2,7 +2,7 @@
 
 import { z } from 'zod';
 
-const senhaRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/;
+const senhaRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
 const cpfRegex = /^\d{11}$/;
 const telefoneRegex = /^\d{10,11}$/;
 

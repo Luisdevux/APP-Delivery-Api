@@ -2,7 +2,7 @@
 
 import { email, z } from 'zod';
 
-const senhaRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/;
+const senhaRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
 
 const LoginSchema = z.object({
     email: z
