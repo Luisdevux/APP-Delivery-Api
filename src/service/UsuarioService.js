@@ -60,6 +60,13 @@ class UsuarioService {
         }
 
         const data = await this.repository.atualizar(id, parsedData);
+
+        // Auto-atualizar profileComplete se CPF e telefone estão presentes
+        if (data.cpf && data.telefone && !data.profileComplete) {
+            await this.repository.atualizar(id, { profileComplete: true });
+            data.profileComplete = true;
+        }
+
         return data;
     }
 
