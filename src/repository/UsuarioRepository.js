@@ -74,6 +74,11 @@ class UsuarioRepository {
         return documento;
     }
 
+    async buscarPorGoogleId(googleId) {
+        const documento = await this.modelUsuario.findOne({ googleId });
+        return documento;
+    }
+
     async buscarPorCpf(cpfValue, idIgnorado = null) {
         const filtro = { cpf: cpfValue };
         if (idIgnorado) {
