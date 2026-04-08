@@ -89,7 +89,8 @@ describe('Routes: AdicionalGrupoRoutes', () => {
             expect(response.body).toEqual(createdGroup);
             expect(mockController.criar).toHaveBeenCalled();
         });
-      it('deve retornar erro ao criar grupo sem autenticação', async () => {
+
+        it('deve retornar erro ao criar grupo sem autenticação', async () => {
             mockController.criar.mockImplementation((req, res) => {
                 res.status(401).json({ error: 'Unauthorized' });
             });
@@ -124,7 +125,7 @@ describe('Routes: AdicionalGrupoRoutes', () => {
             expect(mockController.atualizar).toHaveBeenCalled();
         });
 
-     it('deve retornar erro ao atualizar grupo inexistente', async () => {
+        it('deve retornar erro ao atualizar grupo inexistente', async () => {
             mockController.atualizar.mockImplementation((req, res) => {
                 res.status(404).json({ error: 'Grupo não encontrado' });
             });
@@ -179,7 +180,7 @@ describe('Routes: AdicionalGrupoRoutes', () => {
         });
     });
 
-     describe('Testes de validação de entrada', () => {
+        describe('Testes de validação de entrada', () => {
         it('deve validar ID inválido na busca', async () => {
             mockController.buscarPorID.mockImplementation((req, res) => {
                 res.status(400).json({ error: 'ID inválido' });
@@ -202,7 +203,7 @@ describe('Routes: AdicionalGrupoRoutes', () => {
                 .expect(400);
         });
 
-      it('deve validar body vazio na atualização', async () => {
+        it('deve validar body vazio na atualização', async () => {
             mockController.atualizar.mockImplementation((req, res) => {
                 res.status(400).json({ error: 'Body não pode estar vazio' });
             });
@@ -265,7 +266,7 @@ describe('Routes: AdicionalGrupoRoutes', () => {
             mockController.buscarPorID.mockImplementation((req, res) => {
                 res.json(grupos[0]);
             });
-            
+
             response = await request(app)
                 .get(`/adicionais/${grupoId}`)
                 .expect(200);
