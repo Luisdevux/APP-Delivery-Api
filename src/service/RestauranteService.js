@@ -8,6 +8,9 @@ import {
 } from '../utils/helpers/index.js';
 import RestauranteRepository from '../repository/RestauranteRepository.js';
 import UsuarioRepository from '../repository/UsuarioRepository.js';
+import PratoRepository from '../repository/PratoRepository.js';
+import EnderecoRepository from '../repository/EnderecoRepository.js';
+import PedidoRepository from '../repository/PedidoRepository.js';
 import UploadService from './UploadService.js';
 import Categoria from '../models/Categoria.js';
 import { cnpj } from 'cpf-cnpj-validator';
@@ -16,6 +19,9 @@ class RestauranteService {
     constructor() {
         this.repository = new RestauranteRepository();
         this.usuarioRepository = new UsuarioRepository();
+        this.pratoRepository = new PratoRepository();
+        this.enderecoRepository = new EnderecoRepository();
+        this.pedidoRepository = new PedidoRepository();
         this.uploadService = new UploadService();
     }
 
@@ -142,6 +148,21 @@ class RestauranteService {
         });
 
         const data = await this.repository.deletar(id);
+
+        // Limpeza em cascata
+        if (data) {
+            // 1. Deletar pratos (isso também deixaria adicionais órfãos se não tivéssemos Mongoose hooks, mas faremos manual por segurança)
+            this.pratoRepository.deletarPorRestaurante(id).catch(err => console.error(`Erro Cascade Pratos: ${err.message}`));
+            // 2. Deletar endereço
+            this.enderecoRepository.deletarPorRestaurante(id).catch(err => console.error(`Erro Cascade Endereço: ${err.message}`));
+            // 3. Deletar pedidos (ou anonimizar, mas para restaurantes deletaremos por enquanto conforme discutido)
+            this.pedidoRepository.deletarPorRestaurante(id).catch(err => console.error(`Erro Cascade Pedidos: ${err.message}`));
+            // 4. Deletar foto
+            if (data.foto_restaurante) {
+                this.uploadService.deleteImagemComRetry(data.foto_restaurante).catch(err => console.error(`Erro Cascade Foto: ${err.message}`));
+            }
+        }
+
         return data;
     }
 

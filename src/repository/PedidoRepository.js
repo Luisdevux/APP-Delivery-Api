@@ -102,6 +102,17 @@ class PedidoRepository {
         }
         return pedido;
     }
+
+    async removerVinculosCliente(clienteId) {
+        return await this.modelPedido.updateMany(
+            { cliente_id: clienteId },
+            { $set: { cliente_id: null } }
+        );
+    }
+
+    async deletarPorRestaurante(restauranteId) {
+        return await this.modelPedido.deleteMany({ restaurante_id: restauranteId });
+    }
 }
 
 export default PedidoRepository;
