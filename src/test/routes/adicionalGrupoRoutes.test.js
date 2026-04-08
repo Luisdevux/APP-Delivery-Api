@@ -179,3 +179,25 @@ describe('Routes: AdicionalGrupoRoutes', () => {
         });
     });
 
+     describe('Testes de validação de entrada', () => {
+        it('deve validar ID inválido na busca', async () => {
+            mockController.buscarPorID.mockImplementation((req, res) => {
+                res.status(400).json({ error: 'ID inválido' });
+            });
+
+            await request(app)
+                .get('/adicionais/invalid-id')
+                .expect(400);
+        });
+
+        it('deve validar dados obrigatórios na criação', async () => {
+            mockController.criar.mockImplementation((req, res) => {
+                res.status(400).json({ error: 'Campo nome é obrigatório' });
+            });
+
+            await request(app)
+                .post('/adicionais')
+                .set('Authorization', 'Bearer token')
+                .send({ tipo: 'adicional' })
+                .expect(400);
+        });
