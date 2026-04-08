@@ -26,3 +26,21 @@ describe('Routes: AdicionalGrupoRoutes', () => {
         app.use(express.json());
         app.use('/adicionais', adicionalGrupoRoutes);
     });
+
+       describe('GET /adicionais/prato/:pratoId', () => {
+        it('deve retornar lista de grupos por prato', async () => {
+            mockController.listarPorPrato.mockImplementation((req, res) => {
+                res.json([
+                    { _id: '1', nome: 'Bebidas', restaurante_id: 'rest-123' },
+                    { _id: '2', nome: 'Acompanhamentos', restaurante_id: 'rest-123' }
+                ]);
+            });
+
+            const response = await request(app)
+                .get('/adicionais/prato/prato-123')
+                .expect(200);
+
+            expect(response.body).toBeInstanceOf(Array);
+            expect(mockController.listarPorPrato).toHaveBeenCalled();
+        });
+    });
