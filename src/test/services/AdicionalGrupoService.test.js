@@ -151,6 +151,135 @@ describe('Service: AdicionalGrupoService', () => {
                 await expect(service.criar(parsedData, pratoId, mockRequest)).rejects.toThrow();
                 expect(mockGrupoRepository.criar).not.toHaveBeenCalled();
             });
+
+        describe('buscarPorID', () => {
+                it('deve buscar um grupo por ID com sucesso', async () => {
+                    const grupoId = 'grupo-123';
+                    const mockGrupo = { _id: grupoId, nome: 'Bebidas' };
+
+                    mockGrupoRepository.buscarPorID.mockResolvedValue(mockGrupo);
+
+                    const resultado = await service.buscarPorID(grupoId);
+
+                    expect(mockGrupoRepository.buscarPorID).toHaveBeenCalledWith(grupoId);
+                    expect(resultado).toEqual(mockGrupo);
+                });
+            });
+
+            describe('listarPorPrato', () => {
+                it('deve listar grupos por prato com sucesso', async () => {
+                    const pratoId = 'prato-123';
+                    const grupoIds = ['grupo-1', 'grupo-2'];
+
+                    const mockPrato = {
+                        _id: pratoId,
+                        adicionais_grupo_ids: grupoIds,
+                    };
+
+                    const mockGrupos = [
+                        { _id: 'grupo-1', nome: 'Bebidas' },
+                        { _id: 'grupo-2', nome: 'Acompanhamentos' },
+                    ];
+
+                    mockPratoRepository.buscarPorID.mockResolvedValue(mockPrato);
+                    mockGrupoRepository.listarPorIds.mockResolvedValue(mockGrupos);
+
+                    const resultado = await service.listarPorPrato(pratoId);
+
+                    expect(mockPratoRepository.buscarPorID).toHaveBeenCalledWith(pratoId);
+                    expect(mockGrupoRepository.listarPorIds).toHaveBeenCalledWith(grupoIds);
+                    expect(resultado).toEqual(mockGrupos);
+                });
+            });
+
+        describe('atualizar', () => {
+            it('deve atualizar um grupo com sucesso', async () => {
+                const grupoId = 'grupo-123';
+                const restauranteId = 'restaurante-123';
+                const donoId = 'dono-123';
+                const usuarioId = 'user-123';
+
+                const parsedData = {
+                    nome: 'Bebidas Premium',
+                };
+
+                const mockGrupo = {
+                    _id: grupoId,
+                    nome: 'Bebidas',
+                    restaurante_id: restauranteId,
+                };
+
+                const mockRestaurante = {
+                    _id: restauranteId,
+                    dono_id: { _id: donoId },
+                };
+
+                const mockUsuario = {
+                    _id: usuarioId,
+                    isAdmin: false,
+                };
+
+                const mockGrupoAtualizado = {
+                    ...mockGrupo,
+                    nome: 'Bebidas Premium',
+                };
+
+                mockGrupoRepository.buscarPorID.mockResolvedValue(mockGrupo);
+                mockRestauranteRepository.buscarPorID.mockResolvedValue(mockRestaurante);
+                mockUsuarioRepository.buscarPorID.mockResolvedValue(mockUsuario);
+                mockGrupoRepository.atualizar.mockResolvedValue(mockGrupoAtualizado);
+
+                const mockRequest = { user_id: usuarioId };
+
+                const resultado = await service.atualizar(grupoId, parsedData, mockRequest);
+
+                expect(mockGrupoRepository.buscarPorID).toHaveBeenCalledWith(grupoId);
+                expect(mockGrupoRepository.atualizar).toHaveBeenCalledWith(grupoId, parsedData);
+                expect(resultado).toEqual(mockGrupoAtualizado);
+            });
+        });
+
+            describe('deletar', () => {
+                it('deve deletar um grupo com sucesso', async () => {
+                    const grupoId = 'grupo-123';
+                    const restauranteId = 'restaurante-123';
+                    const donoId = 'dono-123';
+                    const usuarioId = 'user-123';
+
+                    const mockGrupo = {
+                        _id: grupoId,
+                        nome: 'Bebidas',
+                        restaurante_id: restauranteId,
+                    };
+
+                    const mockRestaurante = {
+                        _id: restauranteId,
+                        dono_id: { _id: donoId },
+                    };
+
+                    const mockUsuario = {
+                        _id: usuarioId,
+                        isAdmin: false,
+                    };
+
+                    const mockGrupoDeletado = { ...mockGrupo };
+
+                    mockGrupoRepository.buscarPorID.mockResolvedValue(mockGrupo);
+                    mockRestauranteRepository.buscarPorID.mockResolvedValue(mockRestaurante);
+                    mockUsuarioRepository.buscarPorID.mockResolvedValue(mockUsuario);
+                    mockOpcaoRepository.deletarPorGrupo.mockResolvedValue(true);
+                    mockGrupoRepository.deletar.mockResolvedValue(mockGrupoDeletado);
+
+                    const mockRequest = { user_id: usuarioId };
+
+                    const resultado = await service.deletar(grupoId, mockRequest);
+
+                    expect(mockGrupoRepository.buscarPorID).toHaveBeenCalledWith(grupoId);
+                    expect(mockOpcaoRepository.deletarPorGrupo).toHaveBeenCalledWith(grupoId);
+                    expect(mockGrupoRepository.deletar).toHaveBeenCalledWith(grupoId);
+                    expect(resultado).toEqual(mockGrupoDeletado);
+                });
+            });
         });
     });
 });
