@@ -94,7 +94,7 @@ describe('Service: AdicionalGrupoService', () => {
                 restaurante_id: restauranteId,
             };
 
-            
+
             mockPratoRepository.buscarPorID.mockResolvedValue(mockPrato);
             mockRestauranteRepository.buscarPorID.mockResolvedValue(mockRestaurante);
             mockUsuarioRepository.buscarPorID.mockResolvedValue(mockUsuario);
@@ -111,6 +111,46 @@ describe('Service: AdicionalGrupoService', () => {
             expect(mockUsuarioRepository.buscarPorID).toHaveBeenCalledWith(usuarioId);
             expect(mockGrupoRepository.criar).toHaveBeenCalled();
             expect(resultado).toEqual(mockGrupo);
+
+                it('deve lançar erro se nome já existe no prato', async () => {
+                const pratoId = 'prato-123';
+                const restauranteId = 'restaurante-123';
+                const donoId = 'dono-123';
+                const usuarioId = 'user-123';
+
+                const parsedData = {
+                    nome: 'Bebidas',
+                    tipo: 'adicional',
+                };
+
+                const mockPrato = {
+                    _id: pratoId,
+                    restaurante_id: restauranteId,
+                    adicionais_grupo_ids: ['grupo-existente'],
+                };
+
+                const mockRestaurante = {
+                    _id: restauranteId,
+                    dono_id: { _id: donoId },
+                };
+
+                const mockUsuario = {
+                    _id: usuarioId,
+                    isAdmin: false,
+                };
+
+                const grupoExistente = { _id: 'grupo-existente', nome: 'Bebidas' };
+
+                mockPratoRepository.buscarPorID.mockResolvedValue(mockPrato);
+                mockRestauranteRepository.buscarPorID.mockResolvedValue(mockRestaurante);
+                mockUsuarioRepository.buscarPorID.mockResolvedValue(mockUsuario);
+                mockGrupoRepository.buscarPorNomeEntreIds.mockResolvedValue(grupoExistente);
+
+                const mockRequest = { user_id: usuarioId };
+
+                await expect(service.criar(parsedData, pratoId, mockRequest)).rejects.toThrow();
+                expect(mockGrupoRepository.criar).not.toHaveBeenCalled();
+            });
         });
     });
 });
