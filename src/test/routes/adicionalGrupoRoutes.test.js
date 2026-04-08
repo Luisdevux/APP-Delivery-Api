@@ -233,3 +233,35 @@ describe('Routes: AdicionalGrupoRoutes', () => {
 
             expect(response.body._id).toBe('grupo-temp');
 
+            // Deletar
+            mockController.deletar.mockImplementation((req, res) => {
+                res.json(createdGroup);
+            });
+
+            response = await request(app)
+                .delete('/adicionais/grupo-temp')
+                .set('Authorization', 'Bearer token')
+                .expect(200);
+
+            expect(mockController.deletar).toHaveBeenCalled();
+        });
+
+        it('deve listar, buscar e atualizar um grupo', async () => {
+            const grupoId = 'grupo-123';
+            const grupos = [{ _id: grupoId, nome: 'Bebidas' }];
+
+            // Listar por prato
+            mockController.listarPorPrato.mockImplementation((req, res) => {
+                res.json(grupos);
+            });
+
+            let response = await request(app)
+                .get('/adicionais/prato/prato-123')
+                .expect(200);
+
+            expect(response.body).toBeInstanceOf(Array);
+
+            // Buscar específico
+            mockController.buscarPorID.mockImplementation((req, res) => {
+                res.json(grupos[0]);
+            });
