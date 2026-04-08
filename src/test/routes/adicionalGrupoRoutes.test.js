@@ -265,3 +265,26 @@ describe('Routes: AdicionalGrupoRoutes', () => {
             mockController.buscarPorID.mockImplementation((req, res) => {
                 res.json(grupos[0]);
             });
+            
+            response = await request(app)
+                .get(`/adicionais/${grupoId}`)
+                .expect(200);
+
+            expect(response.body._id).toBe(grupoId);
+
+            // Atualizar
+            const updated = { ...grupos[0], nome: 'Bebidas Premium' };
+            mockController.atualizar.mockImplementation((req, res) => {
+                res.json(updated);
+            });
+
+            response = await request(app)
+                .put(`/adicionais/${grupoId}`)
+                .set('Authorization', 'Bearer token')
+                .send({ nome: 'Bebidas Premium' })
+                .expect(200);
+
+            expect(response.body.nome).toBe('Bebidas Premium');
+        });
+    });
+});
