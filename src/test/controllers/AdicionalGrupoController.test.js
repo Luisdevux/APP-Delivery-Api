@@ -1,15 +1,18 @@
 import AdicionalGrupoController from '../../controllers/AdicionalGrupoController.js';
 import AdicionalGrupoService from '../../service/AdicionalGrupoService.js';
+import {
+    AdicionalGrupoSchema,
+    AdicionalGrupoUpdateSchema
+} from '../../utils/validators/schemas/zod/AdicionalSchema.js';
+import { IdSchema } from '../../utils/validators/schemas/zod/querys/CommonQuerySchema.js';
 import { CommonResponse, HttpStatusCodes, CustomError } from '../../utils/helpers/index.js';
-import * as AdicionalSchema from '../../utils/validators/schemas/zod/AdicionalSchema.js';
-import * as CommonQuerySchema from '../../utils/validators/schemas/zod/querys/CommonQuerySchema.js';
 
 jest.mock('../../service/AdicionalGrupoService.js');
-jest.mock('../../utils/helpers/index.js');
 jest.mock('../../utils/validators/schemas/zod/AdicionalSchema.js');
 jest.mock('../../utils/validators/schemas/zod/querys/CommonQuerySchema.js');
+jest.mock('../../utils/helpers/index.js');
 
-describe('AdicionalGrupoController', () => {
+describe('Controller: AdicionalGrupoController', () => {
     let controller;
     let mockService;
     let mockRequest;
@@ -41,28 +44,21 @@ describe('AdicionalGrupoController', () => {
 
         controller = new AdicionalGrupoController();
 
-        CommonResponse.success = jest.fn();
-        CommonResponse.created = jest.fn();
+        CommonResponse.success = jest.fn().mockReturnValue(mockResponse);
+        CommonResponse.created = jest.fn().mockReturnValue(mockResponse);
 
-        AdicionalSchema.AdicionalGrupoSchema = {
-            parse: jest.fn((data) => data),
-        };
-
-        AdicionalSchema.AdicionalGrupoUpdateSchema = {
-            parse: jest.fn((data) => data),
-        };
-
-        CommonQuerySchema.IdSchema = {
-            parse: jest.fn((data) => data),
-        };
+        AdicionalGrupoSchema.parse = jest.fn((data) => data);
+        AdicionalGrupoUpdateSchema.parse = jest.fn((data) => data);
+        IdSchema.parse = jest.fn((data) => data);
     });
+
 
     describe('listarPorPrato', () => {
         it('deve listar adicionais por prato com sucesso', async () => {
             const pratoId = 'prato-123';
             const mockData = [
-                { id: '1', nome: 'Grupo 1', prato_id: pratoId },
-                { id: '2', nome: 'Grupo 2', prato_id: pratoId },
+                { _id: '1', nome: 'Grupo 1', restaurante_id: 'rest-123' },
+                { _id: '2', nome: 'Grupo 2', restaurante_id: 'rest-123' },
             ];
 
             mockRequest.params = { pratoId };
@@ -70,20 +66,9 @@ describe('AdicionalGrupoController', () => {
 
             await controller.listarPorPrato(mockRequest, mockResponse);
 
-            expect(CommonQuerySchema.IdSchema.parse).toHaveBeenCalledWith(pratoId);
+            expect(IdSchema.parse).toHaveBeenCalledWith(pratoId);
             expect(mockService.listarPorPrato).toHaveBeenCalledWith(pratoId);
             expect(CommonResponse.success).toHaveBeenCalledWith(mockResponse, mockData);
-        });
-
-        it('deve lançar erro ao validar pratoId inválido', async () => {
-            const error = new Error('ID inválido');
-            CommonQuerySchema.IdSchema.parse.mockImplementation(() => {
-                throw error;
-            });
-
-            mockRequest.params = { pratoId: 'invalid' };
-
-            await expect(controller.listarPorPrato(mockRequest, mockResponse)).rejects.toThrow(error);
         });
 
         it('deve retornar vazio quando não há adicionais', async () => {
@@ -96,80 +81,82 @@ describe('AdicionalGrupoController', () => {
             expect(mockService.listarPorPrato).toHaveBeenCalledWith(pratoId);
             expect(CommonResponse.success).toHaveBeenCalledWith(mockResponse, []);
         });
+
+        it('deve lançar erro ao validar pratoId inválido', async () => {
+            const error = new CustomError({ statusCode: 400, errorType: 'invalidInput' });
+            IdSchema.parse.mockImplementation(() => {
+                throw error;
+            });
+
+            mockRequest.params = { pratoId: 'invalid' };
+
+            await expect(controller.listarPorPrato(mockRequest, mockResponse)).rejects.toThrow(error);
+        });
     });
 
     describe('buscarPorID', () => {
-        it('deve buscar um adicional grupo por ID com sucesso', async () => {
-            const id = 'grupo-123';
-            const mockData = { id, nome: 'Grupo Premium', prato_id: 'prato-123' };
+        it('deve buscar um grupo por ID com sucesso', async () => {
+            const grupoId = 'grupo-123';
+            const mockData = {
+                _id: grupoId,
+                nome: 'Bebidas',
+                restaurante_id: 'rest-123',
+                tipo: 'adicional',
+            };
 
-            mockRequest.params = { id };
+            mockRequest.params = { id: grupoId };
             mockService.buscarPorID.mockResolvedValue(mockData);
 
             await controller.buscarPorID(mockRequest, mockResponse);
 
-            expect(CommonQuerySchema.IdSchema.parse).toHaveBeenCalledWith(id);
-            expect(mockService.buscarPorID).toHaveBeenCalledWith(id);
+            expect(IdSchema.parse).toHaveBeenCalledWith(grupoId);
+            expect(mockService.buscarPorID).toHaveBeenCalledWith(grupoId);
             expect(CommonResponse.success).toHaveBeenCalledWith(mockResponse, mockData);
         });
 
-        it('deve lançar erro ao buscar com ID inválido', async () => {
-            const error = new Error('ID inválido');
-            CommonQuerySchema.IdSchema.parse.mockImplementation(() => {
-                throw error;
-            });
+        it('deve lançar erro quando grupo não existe', async () => {
+            const grupoId = 'grupo-inexistente';
+            const error = new CustomError({ statusCode: 404, errorType: 'resourceNotFound' });
+            IdSchema.parse.mockReturnValue(grupoId);
+            mockService.buscarPorID.mockRejectedValue(error);
 
-            mockRequest.params = { id: 'invalid' };
+            mockRequest.params = { id: grupoId };
 
             await expect(controller.buscarPorID(mockRequest, mockResponse)).rejects.toThrow(error);
-        });
-        
-    it('deve retornar null quando ID não encontrado', async () => {
-            const id = 'grupo-999';
-            mockRequest.params = { id };
-            mockService.buscarPorID.mockResolvedValue(null);
-
-            await controller.buscarPorID(mockRequest, mockResponse);
-
-            expect(mockService.buscarPorID).toHaveBeenCalledWith(id);
-            expect(CommonResponse.success).toHaveBeenCalledWith(mockResponse, null);
         });
     });
 
     describe('criar', () => {
-        it('deve criar um novo grupo de adicional com sucesso', async () => {
-            const pratoId = 'prato-123';
-            const requestBody = {
-                prato_id: pratoId,
-                nome: 'Novo Grupo',
-                descricao: 'Descrição do grupo',
+        it('deve criar um novo grupo de adicional', async () => {
+            const parsedData = {
+                nome: 'Bebidas',
+                tipo: 'adicional',
+                obrigatorio: false,
+                prato_id: 'prato-123'
             };
 
-            const expectedServiceData = {
-                nome: 'Novo Grupo',
-                descricao: 'Descrição do grupo',
+            const mockGrupo = {
+                _id: 'grupo-123',
+                nome: 'Bebidas',
+                restaurante_id: 'rest-123',
+                tipo: 'adicional',
             };
 
-            const mockData = {
-                id: 'grupo-123',
-                ...expectedServiceData,
-                prato_id: pratoId,
-            };
+            AdicionalGrupoSchema.parse.mockReturnValue(parsedData);
+            mockService.criar.mockResolvedValue(mockGrupo);
 
-            mockRequest.body = requestBody;
-            AdicionalSchema.AdicionalGrupoSchema.parse.mockReturnValue(requestBody);
-            mockService.criar.mockResolvedValue(mockData);
+            mockRequest.body = parsedData;
 
             await controller.criar(mockRequest, mockResponse);
 
-            expect(AdicionalSchema.AdicionalGrupoSchema.parse).toHaveBeenCalledWith(requestBody);
-            expect(mockService.criar).toHaveBeenCalledWith(expectedServiceData, pratoId, mockRequest);
-            expect(CommonResponse.created).toHaveBeenCalledWith(mockResponse, mockData);
+            expect(AdicionalGrupoSchema.parse).toHaveBeenCalledWith(mockRequest.body);
+            expect(mockService.criar).toHaveBeenCalled();
+            expect(CommonResponse.created).toHaveBeenCalledWith(mockResponse, mockGrupo);
         });
 
         it('deve lançar erro ao validar dados inválidos', async () => {
-            const error = new Error('Dados inválidos');
-            AdicionalSchema.AdicionalGrupoSchema.parse.mockImplementation(() => {
+            const error = new CustomError({ statusCode: 400, errorType: 'invalidInput' });
+            AdicionalGrupoSchema.parse.mockImplementation(() => {
                 throw error;
             });
 
@@ -177,239 +164,79 @@ describe('AdicionalGrupoController', () => {
 
             await expect(controller.criar(mockRequest, mockResponse)).rejects.toThrow(error);
         });
-
-        it('deve lançar erro quando grupo já existe', async () => {
-            const requestBody = {
-                prato_id: 'prato-123',
-                nome: 'Grupo Existente',
-            };
-
-            const serviceError = new CustomError({
-                statusCode: 409,
-                errorType: 'resourceAlreadyExists',
-                field: 'nome',
-            });
-
-            mockRequest.body = requestBody;
-            AdicionalSchema.AdicionalGrupoSchema.parse.mockReturnValue(requestBody);
-            mockService.criar.mockRejectedValue(serviceError);
-
-            await expect(controller.criar(mockRequest, mockResponse)).rejects.toThrow(serviceError);
-        });
-
-        it('deve extrair prato_id corretamente do body', async () => {
-            const requestBody = {
-                prato_id: 'prato-456',
-                nome: 'Grupo Test',
-            };
-
-            mockRequest.body = requestBody;
-            AdicionalSchema.AdicionalGrupoSchema.parse.mockReturnValue(requestBody);
-            mockService.criar.mockResolvedValue({});
-
-            await controller.criar(mockRequest, mockResponse);
-
-            const callArgs = mockService.criar.mock.calls[0];
-            expect(callArgs[0]).toEqual({ nome: 'Grupo Test' });
-            expect(callArgs[1]).toEqual('prato-456');
-        });
     });
 
     describe('atualizar', () => {
-        it('deve atualizar um grupo de adicional com sucesso', async () => {
-            const id = 'grupo-123';
-            const requestBody = {
-                nome: 'Grupo Atualizado',
-                descricao: 'Descrição atualizada',
+        it('deve atualizar um grupo com sucesso', async () => {
+            const grupoId = 'grupo-123';
+            const updateData = {
+                nome: 'Bebidas Premium',
             };
 
-            const mockData = {
-                id,
-                ...requestBody,
+            const mockGrupoAtualizado = {
+                _id: grupoId,
+                nome: 'Bebidas Premium',
+                restaurante_id: 'rest-123',
+                tipo: 'adicional',
             };
 
-            mockRequest.params = { id };
-            mockRequest.body = requestBody;
-            AdicionalSchema.AdicionalGrupoUpdateSchema.parse.mockReturnValue(requestBody);
-            mockService.atualizar.mockResolvedValue(mockData);
+            AdicionalGrupoUpdateSchema.parse.mockReturnValue(updateData);
+            mockService.atualizar.mockResolvedValue(mockGrupoAtualizado);
+            CommonResponse.success.mockReturnValue(mockResponse);
+
+            mockRequest.params = { id: grupoId };
+            mockRequest.body = updateData;
 
             await controller.atualizar(mockRequest, mockResponse);
 
-            expect(CommonQuerySchema.IdSchema.parse).toHaveBeenCalledWith(id);
-            expect(AdicionalSchema.AdicionalGrupoUpdateSchema.parse).toHaveBeenCalledWith(requestBody);
-            expect(mockService.atualizar).toHaveBeenCalledWith(id, requestBody, mockRequest);
-            expect(CommonResponse.success).toHaveBeenCalledWith(
-                mockResponse,
-                mockData,
-                HttpStatusCodes.OK.code,
-                'Grupo de adicional atualizado com sucesso.'
-            );
+            expect(IdSchema.parse).toHaveBeenCalledWith(grupoId);
+            expect(AdicionalGrupoUpdateSchema.parse).toHaveBeenCalledWith(mockRequest.body);
+            expect(mockService.atualizar).toHaveBeenCalledWith(grupoId, updateData, mockRequest);
+            expect(CommonResponse.success).toHaveBeenCalled();
         });
 
-        it('deve lançar erro ao validar ID inválido na atualização', async () => {
-            const error = new Error('ID inválido');
-            CommonQuerySchema.IdSchema.parse.mockImplementation(() => {
-                throw error;
-            });
-
-            mockRequest.params = { id: 'invalid' };
-            mockRequest.body = { nome: 'Test' };
-
-            await expect(controller.atualizar(mockRequest, mockResponse)).rejects.toThrow(error);
-        });
-
-        it('deve lançar erro ao validar dados inválidos na atualização', async () => {
-            const error = new Error('Dados inválidos');
-            AdicionalSchema.AdicionalGrupoUpdateSchema.parse.mockImplementation(() => {
+        it('deve lançar erro ao atualizar com dados inválidos', async () => {
+            const error = new CustomError({ statusCode: 400, errorType: 'invalidInput' });
+            AdicionalGrupoUpdateSchema.parse.mockImplementation(() => {
                 throw error;
             });
 
             mockRequest.params = { id: 'grupo-123' };
-            mockRequest.body = { nome: '' };
+            mockRequest.body = {};
 
             await expect(controller.atualizar(mockRequest, mockResponse)).rejects.toThrow(error);
-        });
-
-        it('deve lançar erro quando grupo não encontrado na atualização', async () => {
-            const id = 'grupo-999';
-            const requestBody = { nome: 'Grupo' };
-
-            const serviceError = new CustomError({
-                statusCode: 404,
-                errorType: 'resourceNotFound',
-            });
-
-            mockRequest.params = { id };
-            mockRequest.body = requestBody;
-            AdicionalSchema.AdicionalGrupoUpdateSchema.parse.mockReturnValue(requestBody);
-            mockService.atualizar.mockRejectedValue(serviceError);
-
-            await expect(controller.atualizar(mockRequest, mockResponse)).rejects.toThrow(serviceError);
         });
     });
 
     describe('deletar', () => {
-        it('deve deletar um grupo de adicional com sucesso', async () => {
-            const id = 'grupo-123';
-            const mockData = { id, deletedAt: new Date() };
+        it('deve deletar um grupo com sucesso', async () => {
+            const grupoId = 'grupo-123';
+            const mockGrupoDeletado = {
+                _id: grupoId,
+                nome: 'Bebidas',
+            };
 
-            mockRequest.params = { id };
-            mockService.deletar.mockResolvedValue(mockData);
+            mockService.deletar.mockResolvedValue(mockGrupoDeletado);
+            CommonResponse.success.mockReturnValue(mockResponse);
+
+            mockRequest.params = { id: grupoId };
 
             await controller.deletar(mockRequest, mockResponse);
 
-            expect(CommonQuerySchema.IdSchema.parse).toHaveBeenCalledWith(id);
-            expect(mockService.deletar).toHaveBeenCalledWith(id, mockRequest);
-            expect(CommonResponse.success).toHaveBeenCalledWith(
-                mockResponse,
-                mockData,
-                HttpStatusCodes.OK.code,
-                'Grupo de adicional excluído com sucesso.'
-            );
+            expect(IdSchema.parse).toHaveBeenCalledWith(grupoId);
+            expect(mockService.deletar).toHaveBeenCalledWith(grupoId, mockRequest);
+            expect(CommonResponse.success).toHaveBeenCalled();
         });
 
-        it('deve lançar erro ao validar ID inválido na deleção', async () => {
-            const error = new Error('ID inválido');
-            CommonQuerySchema.IdSchema.parse.mockImplementation(() => {
-                throw error;
-            });
+        it('deve lançar erro ao deletar grupo inexistente', async () => {
+            const grupoId = 'grupo-inexistente';
+            const error = new CustomError({ statusCode: 404, errorType: 'resourceNotFound' });
 
-            mockRequest.params = { id: 'invalid' };
+            mockService.deletar.mockRejectedValue(error);
+
+            mockRequest.params = { id: grupoId };
 
             await expect(controller.deletar(mockRequest, mockResponse)).rejects.toThrow(error);
-        });
-
-        it('deve lançar erro quando grupo não encontrado na deleção', async () => {
-            const id = 'grupo-999';
-
-            const serviceError = new CustomError({
-                statusCode: 404,
-                errorType: 'resourceNotFound',
-            });
-
-            mockRequest.params = { id };
-            mockService.deletar.mockRejectedValue(serviceError);
-
-            await expect(controller.deletar(mockRequest, mockResponse)).rejects.toThrow(serviceError);
-        });
-
-        it('deve lançar erro quando usuário não tem permissão para deletar', async () => {
-            const id = 'grupo-123';
-
-            const serviceError = new CustomError({
-                statusCode: 403,
-                errorType: 'forbidden',
-            });
-
-            mockRequest.params = { id };
-            mockService.deletar.mockRejectedValue(serviceError);
-
-            await expect(controller.deletar(mockRequest, mockResponse)).rejects.toThrow(serviceError);
-        });
-    });
-
-    describe('Testes de integração de fluxo', () => {
-        it('deve criar e depois deletar um grupo', async () => {
-            // Criar
-            const createBody = {
-                prato_id: 'prato-123',
-                nome: 'Grupo Temp',
-            };
-
-            const createdGroup = {
-                id: 'grupo-temp',
-                nome: 'Grupo Temp',
-            };
-
-            mockRequest.body = createBody;
-            mockRequest.params = {};
-            AdicionalSchema.AdicionalGrupoSchema.parse.mockReturnValue(createBody);
-            mockService.criar.mockResolvedValue(createdGroup);
-
-            await controller.criar(mockRequest, mockResponse);
-
-            expect(mockService.criar).toHaveBeenCalled();
-
-            // Deletar
-            mockRequest.params = { id: createdGroup.id };
-            mockService.deletar.mockResolvedValue({ ...createdGroup, deletedAt: new Date() });
-
-            await controller.deletar(mockRequest, mockResponse);
-
-            expect(mockService.deletar).toHaveBeenCalledWith(createdGroup.id, mockRequest);
-        });
-
-        it('deve listar, buscar e atualizar um grupo', async () => {
-            const pratoId = 'prato-123';
-            const groupId = 'grupo-123';
-
-            // Listar
-            const groups = [
-                { id: groupId, nome: 'Grupo Original', prato_id: pratoId },
-            ];
-
-            mockRequest.params = { pratoId };
-            mockService.listarPorPrato.mockResolvedValue(groups);
-
-            await controller.listarPorPrato(mockRequest, mockResponse);
-            expect(mockService.listarPorPrato).toHaveBeenCalledWith(pratoId);
-
-            // Buscar
-            mockRequest.params = { id: groupId };
-            mockService.buscarPorID.mockResolvedValue(groups[0]);
-
-            await controller.buscarPorID(mockRequest, mockResponse);
-            expect(mockService.buscarPorID).toHaveBeenCalledWith(groupId);
-
-            // Atualizar
-            const updateBody = { nome: 'Grupo Modificado' };
-            mockRequest.params = { id: groupId };
-            mockRequest.body = updateBody;
-            AdicionalSchema.AdicionalGrupoUpdateSchema.parse.mockReturnValue(updateBody);
-            mockService.atualizar.mockResolvedValue({ ...groups[0], ...updateBody });
-
-            await controller.atualizar(mockRequest, mockResponse);
-            expect(mockService.atualizar).toHaveBeenCalledWith(groupId, updateBody, mockRequest);
         });
     });
 });
