@@ -44,3 +44,20 @@ describe('Routes: AdicionalGrupoRoutes', () => {
             expect(mockController.listarPorPrato).toHaveBeenCalled();
         });
     });
+
+      describe('GET /adicionais/:id', () => {
+        it('deve retornar um grupo específico por ID', async () => {
+            const mockGrupo = { _id: 'grupo-123', nome: 'Bebidas', restaurante_id: 'rest-123' };
+
+            mockController.buscarPorID.mockImplementation((req, res) => {
+                res.json(mockGrupo);
+            });
+
+            const response = await request(app)
+                .get('/adicionais/grupo-123')
+                .expect(200);
+
+            expect(response.body).toEqual(mockGrupo);
+            expect(mockController.buscarPorID).toHaveBeenCalled();
+        });
+    });
