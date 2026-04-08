@@ -123,7 +123,7 @@ describe('Routes: AdicionalGrupoRoutes', () => {
             expect(response.body).toEqual(updatedGroup);
             expect(mockController.atualizar).toHaveBeenCalled();
         });
-        
+
      it('deve retornar erro ao atualizar grupo inexistente', async () => {
             mockController.atualizar.mockImplementation((req, res) => {
                 res.status(404).json({ error: 'Grupo não encontrado' });
@@ -157,4 +157,25 @@ describe('Routes: AdicionalGrupoRoutes', () => {
             expect(mockController.deletar).toHaveBeenCalled();
         });
 
+        it('deve retornar erro ao deletar grupo inexistente', async () => {
+            mockController.deletar.mockImplementation((req, res) => {
+                res.status(404).json({ error: 'Grupo não encontrado' });
+            });
+
+            await request(app)
+                .delete('/adicionais/grupo-inexistente')
+                .set('Authorization', 'Bearer token')
+                .expect(404);
+        });
+
+        it('deve retornar erro sem autenticação na deleção', async () => {
+            mockController.deletar.mockImplementation((req, res) => {
+                res.status(401).json({ error: 'Unauthorized' });
+            });
+
+            await request(app)
+                .delete('/adicionais/grupo-123')
+                .expect(401);
+        });
+    });
 
