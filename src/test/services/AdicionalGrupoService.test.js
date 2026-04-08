@@ -93,4 +93,24 @@ describe('Service: AdicionalGrupoService', () => {
                 ...parsedData,
                 restaurante_id: restauranteId,
             };
+
+            
+            mockPratoRepository.buscarPorID.mockResolvedValue(mockPrato);
+            mockRestauranteRepository.buscarPorID.mockResolvedValue(mockRestaurante);
+            mockUsuarioRepository.buscarPorID.mockResolvedValue(mockUsuario);
+            mockGrupoRepository.buscarPorNomeEntreIds.mockResolvedValue(null);
+            mockGrupoRepository.criar.mockResolvedValue(mockGrupo);
+            mockPratoRepository.atualizar.mockResolvedValue(true);
+
+            const mockRequest = { user_id: usuarioId };
+
+            const resultado = await service.criar(parsedData, pratoId, mockRequest);
+
+            expect(mockPratoRepository.buscarPorID).toHaveBeenCalledWith(pratoId);
+            expect(mockRestauranteRepository.buscarPorID).toHaveBeenCalledWith(restauranteId);
+            expect(mockUsuarioRepository.buscarPorID).toHaveBeenCalledWith(usuarioId);
+            expect(mockGrupoRepository.criar).toHaveBeenCalled();
+            expect(resultado).toEqual(mockGrupo);
+        });
+    });
 });
