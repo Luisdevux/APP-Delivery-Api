@@ -201,3 +201,35 @@ describe('Routes: AdicionalGrupoRoutes', () => {
                 .send({ tipo: 'adicional' })
                 .expect(400);
         });
+
+      it('deve validar body vazio na atualização', async () => {
+            mockController.atualizar.mockImplementation((req, res) => {
+                res.status(400).json({ error: 'Body não pode estar vazio' });
+            });
+
+            await request(app)
+                .put('/adicionais/grupo-123')
+                .set('Authorization', 'Bearer token')
+                .send({})
+                .expect(400);
+        });
+    });
+
+    describe('Testes de fluxo completo', () => {
+        it('deve criar, listar e deletar um grupo', async () => {
+            const newGroup = { nome: 'Bebidas', prato_id: 'prato-123' };
+            const createdGroup = { _id: 'grupo-temp', ...newGroup };
+
+            // Criar
+            mockController.criar.mockImplementation((req, res) => {
+                res.status(201).json(createdGroup);
+            });
+
+            let response = await request(app)
+                .post('/adicionais')
+                .set('Authorization', 'Bearer token')
+                .send(newGroup)
+                .expect(201);
+
+            expect(response.body._id).toBe('grupo-temp');
+
