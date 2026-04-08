@@ -61,3 +61,31 @@ describe('Routes: AdicionalGrupoRoutes', () => {
             expect(mockController.buscarPorID).toHaveBeenCalled();
         });
     });
+
+    describe('POST /adicionais', () => {
+        it('deve criar um novo grupo de adicional', async () => {
+            const newGroup = {
+                nome: 'Bebidas',
+                tipo: 'adicional',
+                prato_id: 'prato-123'
+            };
+
+            const createdGroup = {
+                _id: 'grupo-123',
+                ...newGroup,
+                restaurante_id: 'rest-123'
+            };
+
+            mockController.criar.mockImplementation((req, res) => {
+                res.status(201).json(createdGroup);
+            });
+
+            const response = await request(app)
+                .post('/adicionais')
+                .set('Authorization', 'Bearer token')
+                .send(newGroup)
+                .expect(201);
+
+            expect(response.body).toEqual(createdGroup);
+            expect(mockController.criar).toHaveBeenCalled();
+        });
