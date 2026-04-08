@@ -89,3 +89,38 @@ describe('Routes: AdicionalGrupoRoutes', () => {
             expect(response.body).toEqual(createdGroup);
             expect(mockController.criar).toHaveBeenCalled();
         });
+      it('deve retornar erro ao criar grupo sem autenticação', async () => {
+            mockController.criar.mockImplementation((req, res) => {
+                res.status(401).json({ error: 'Unauthorized' });
+            });
+
+            await request(app)
+                .post('/adicionais')
+                .send({ nome: 'Bebidas' })
+                .expect(401);
+        });
+    });
+
+    describe('PUT /adicionais/:id', () => {
+        it('deve atualizar um grupo de adicional', async () => {
+            const updateData = { nome: 'Bebidas Premium' };
+            const updatedGroup = {
+                _id: 'grupo-123',
+                nome: 'Bebidas Premium',
+                restaurante_id: 'rest-123'
+            };
+
+            mockController.atualizar.mockImplementation((req, res) => {
+                res.json(updatedGroup);
+            });
+
+            const response = await request(app)
+                .put('/adicionais/grupo-123')
+                .set('Authorization', 'Bearer token')
+                .send(updateData)
+                .expect(200);
+
+            expect(response.body).toEqual(updatedGroup);
+            expect(mockController.atualizar).toHaveBeenCalled();
+        });
+
