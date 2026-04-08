@@ -25,7 +25,7 @@ class UsuarioRepository {
         }
         document.accesstoken = accesstoken;
         document.refreshtoken = refreshtoken;
-        const data = document.save();
+        const data = await document.save();
         return data;
     }
 

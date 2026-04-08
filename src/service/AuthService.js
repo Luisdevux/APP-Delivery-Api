@@ -29,7 +29,7 @@ class AuthService {
     }
 
     async login(body) {
-        const email = body.email || body.email.trim().toLowerCase();
+        const email = body.email.trim().toLowerCase();
         const userEncontrado = await this.repository.buscarPorEmail(email);
         if (!userEncontrado) {
             throw new CustomError({
@@ -149,10 +149,11 @@ class AuthService {
             const userPorEmail = await this.repository.buscarPorEmail(email);
 
             if (userPorEmail) {
-                // Vincular conta Google a conta existente
+                // Vincular conta Google a conta existente (mantém authProvider original se já tem senha)
+                const novoProvider = userPorEmail.senha ? userPorEmail.authProvider : 'google';
                 user = await this.repository.atualizar(userPorEmail._id, {
                     googleId,
-                    authProvider: 'google',
+                    authProvider: novoProvider,
                     foto_perfil: userPorEmail.foto_perfil || picture || ''
                 });
             } else {

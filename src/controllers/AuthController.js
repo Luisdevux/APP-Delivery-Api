@@ -23,6 +23,7 @@ class AuthController {
         const body = req.body || {};
         const validatedBody = LoginSchema.parse(body);
         const data = await this.service.login(validatedBody);
+        //TODO: remover quando for fazer o deploy
         console.log(data)
         return CommonResponse.success(res, data);
     }
@@ -59,7 +60,7 @@ class AuthController {
         }
 
         const decodedId = UsuarioIdSchema.parse(decoded.id);
-        await this.service.logout(decodedId, token);
+        await this.service.logout(decodedId);
 
         return CommonResponse.success(res, null, HttpStatusCodes.OK.code, messages.success.logout);
     }
