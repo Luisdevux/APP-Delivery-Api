@@ -125,4 +125,124 @@ describe('Repository: AdicionalGrupoRepository', () => {
             expect(resultado).toEqual(mockGrupos);
         });
     });
+
+    describe('listarPorIds', () => {
+        it('deve listar grupos por um array de IDs', async () => {
+            const ids = ['id-1', 'id-2', 'id-3'];
+            const mockGrupos = [
+                { _id: 'id-1', nome: 'Grupo 1', ativo: true },
+                { _id: 'id-2', nome: 'Grupo 2', ativo: true }
+            ];
+
+            mockModel.find.mockReturnValue({
+                sort: jest.fn().mockResolvedValue(mockGrupos)
+            });
+
+            const resultado = await repository.listarPorIds(ids);
+
+            expect(mockModel.find).toHaveBeenCalledWith({
+                _id: { $in: ids },
+                ativo: true
+            });
+            expect(resultado).toEqual(mockGrupos);
+        });
+    });
+
+    describe('buscarPorNomeEntreIds', () => {
+        it('deve buscar grupo por nome dentro de IDs específicos', async () => {
+            const nome = 'Bebidas';
+            const ids = ['id-1', 'id-2'];
+            const mockGrupo = { _id: 'id-1', nome: 'Bebidas' };
+
+            mockModel.findOne.mockResolvedValue(mockGrupo);
+
+            const resultado = await repository.buscarPorNomeEntreIds(nome, ids);
+
+            expect(mockModel.findOne).toHaveBeenCalledWith({
+                nome,
+                _id: { $in: ids }
+            });
+            expect(resultado).toEqual(mockGrupo);
+        });
+
+        it('deve retornar null quando grupo não existe', async () => {
+            const nome = 'Inexistente';
+            const ids = ['id-1', 'id-2'];
+
+            mockModel.findOne.mockResolvedValue(null);
+
+            const resultado = await repository.buscarPorNomeEntreIds(nome, ids);
+
+            expect(resultado).toBeNull();
+        });
+    });
+
+    describe('criar', () => {
+        it('deve criar um novo grupo de adicional', async () => {
+            const dadosGrupo = {
+                nome: 'Bebidas',
+                restaurante_id: 'restaurante-123',
+                tipo: 'adicional'
+            };
+
+            const mockGrupo = {
+                _id: 'grupo-123',
+                ...dadosGrupo,
+                save: jest.fn().mockResolvedValue(true)
+            };
+
+            mockModel.mockImplementation(() => mockGrupo);
+            const repo = new AdicionalGrupoRepository({ AdicionalGrupoModel: mockModel });
+
+            const resultado = await repo.criar(dadosGrupo);
+
+            expect(resultado).toEqual(mockGrupo);
+        });
+    });
+
+    describe('atualizar', () => {
+        it('deve atualizar um grupo com sucesso', async () => {
+            const grupoId = 'grupo-123';
+            const parsedData = { nome: 'Bebidas Premium' };
+            const mockGrupoAtualizado = {
+                _id: grupoId,
+                nome: 'Bebidas Premium',
+                restaurante_id: 'restaurante-123'
+            };
+
+            mockModel.findByIdAndUpdate.mockResolvedValue(mockGrupoAtualizado);
+
+            const resultado = await repository.atualizar(grupoId, parsedData);
+
+            expect(mockModel.findByIdAndUpdate).toHaveBeenCalledWith(
+                grupoId,
+                parsedData,
+                { returnDocument: 'after' }
+            );
+            expect(resultado).toEqual(mockGrupoAtualizado);
+        });
+
+        it('deve lançar erro quando grupo não existe para atualizar', async () => {
+            const grupoId = 'grupo-inexistente';
+            const parsedData = { nome: 'Novo Nome' };
+
+            mockModel.findByIdAndUpdate.mockResolvedValue(null);
+
+            await expect(repository.atualizar(grupoId, parsedData)).rejects.toThrow();
+        });
+    });
+
+    describe('deletar', () => {
+        it('deve deletar um grupo com sucesso', async () => {
+            const grupoId = 'grupo-123';
+            const mockGrupoDeletado = { _id: grupoId, nome: 'Bebidas' };
+
+            mockModel.findByIdAndDelete.mockResolvedValue(mockGrupoDeletado);
+
+            const resultado = await repository.deletar(grupoId);
+
+            expect(mockModel.findByIdAndDelete).toHaveBeenCalledWith(grupoId);
+            expect(resultado).toEqual(mockGrupoDeletado);
+        });
+    });
 });
