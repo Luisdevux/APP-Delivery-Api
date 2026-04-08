@@ -258,6 +258,25 @@ class PedidoService {
                     customMessage: 'Não é possível cancelar um pedido já entregue.'
                 });
             }
+
+            // Verificar se o usuário é o cliente, o dono do restaurante ou admin
+            const restaurante = await this.restauranteRepository.buscarPorID(pedido.restaurante_id._id || pedido.restaurante_id);
+            const usuarioLogado = await this.usuarioRepository.buscarPorID(req.user_id);
+            const donoId = String(restaurante.dono_id._id || restaurante.dono_id);
+            const clienteId = String(pedido.cliente_id._id || pedido.cliente_id);
+
+            const isDonoOuAdmin = usuarioLogado.isAdmin || String(usuarioLogado._id) === donoId;
+            const isCliente = String(usuarioLogado._id) === clienteId;
+
+            if (!isDonoOuAdmin && !isCliente) {
+                throw new CustomError({
+                    statusCode: HttpStatusCodes.FORBIDDEN.code,
+                    errorType: 'forbidden',
+                    field: 'Pedido',
+                    details: [],
+                    customMessage: 'Você não tem permissão para cancelar este pedido.'
+                });
+            }
         } else {
             // Verificar se a transição de status é válida
             const statusEsperado = FLUXO_STATUS[pedido.status];
@@ -271,7 +290,7 @@ class PedidoService {
                 });
             }
 
-            // Verificar se o usuário é o dono do restaurante ou admin
+            // Para outros status (em_preparo, etc), apenas dono ou admin
             const restaurante = await this.restauranteRepository.buscarPorID(pedido.restaurante_id._id || pedido.restaurante_id);
             const usuarioLogado = await this.usuarioRepository.buscarPorID(req.user_id);
             const donoId = String(restaurante.dono_id._id || restaurante.dono_id);
