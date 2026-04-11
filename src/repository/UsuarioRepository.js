@@ -25,7 +25,7 @@ class UsuarioRepository {
         }
         document.accesstoken = accesstoken;
         document.refreshtoken = refreshtoken;
-        const data = document.save();
+        const data = await document.save();
         return data;
     }
 
@@ -71,6 +71,11 @@ class UsuarioRepository {
             filtro._id = { $ne: idIgnorado };
         }
         const documento = await this.modelUsuario.findOne(filtro).select('+senha');
+        return documento;
+    }
+
+    async buscarPorGoogleId(googleId) {
+        const documento = await this.modelUsuario.findOne({ googleId });
         return documento;
     }
 

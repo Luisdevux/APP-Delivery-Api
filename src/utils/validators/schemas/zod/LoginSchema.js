@@ -1,8 +1,8 @@
 // src/utils/validators/schemas/zod/LoginSchema.js
 
-import { email, z } from 'zod';
+import { z } from 'zod';
 
-const senhaRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/;
+const senhaRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
 
 const LoginSchema = z.object({
     email: z

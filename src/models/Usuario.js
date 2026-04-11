@@ -18,8 +18,22 @@ class Usuario {
             },
             senha: {
                 type: String,
-                required: [true, "A senha é obrigatória!"],
+                required: false,
                 select: false
+            },
+            googleId: {
+                type: String,
+                unique: true,
+                sparse: true
+            },
+            authProvider: {
+                type: String,
+                enum: ["local", "google"],
+                default: "local"
+            },
+            profileComplete: {
+                type: Boolean,
+                default: false
             },
             cpf: {
                 type: String,
