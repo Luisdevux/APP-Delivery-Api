@@ -137,6 +137,13 @@ class RestauranteRepository {
         }
         return restaurante;
     }
+
+    async removerCategoriaDeTodos(categoriaId) {
+        return await this.modelRestaurante.updateMany(
+            { categoria_ids: categoriaId },
+            { $pull: { categoria_ids: categoriaId } }
+        );
+    }
 }
 
 export default RestauranteRepository;

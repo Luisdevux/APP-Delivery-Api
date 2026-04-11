@@ -229,14 +229,14 @@ const authRoutes = {
             + Caso de uso: Redefinição de senha utilizando código recebido por email.
 
             + Função de Negócio:
-                - Permitir ao usuário definir uma nova senha utilizando o código de recuperação.
+                - Permitir ao usuário definir uma nova senha utilizando o código numérico de recuperação.
+                + Recebe via query string ou path param:
+                    - **token**: código de recuperação de 6 dígitos recebido por email.
                 + Recebe no corpo da requisição:
-                    - **email**: email do usuário.
-                    - **codigo**: código de recuperação recebido por email.
-                    - **novaSenha**: nova senha a ser definida.
+                    - **senha**: nova senha a ser definida.
 
             + Regras de Negócio:
-                - O código deve ser válido e não expirado.
+                - O código token deve ser válido e não expirado.
                 - A nova senha deve atender os requisitos de segurança.
                 - Após redefinição, o código é invalidado.
                 - Rate limiting aplicado para evitar brute force.
@@ -244,6 +244,18 @@ const authRoutes = {
             + Resultado Esperado:
                 - HTTP 200 OK com mensagem de confirmação da redefinição.
         `,
+            parameters: [
+                {
+                    name: "token",
+                    in: "query",
+                    description: "Código de recuperação de 6 dígitos",
+                    required: true,
+                    schema: {
+                        type: "string",
+                        example: "123456"
+                    }
+                }
+            ],
             requestBody: {
                 content: {
                     "application/json": {

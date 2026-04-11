@@ -8,9 +8,9 @@ const router = express.Router();
 const notificacaoController = new NotificacaoController();
 
 router
-    .post('/notificacoes', asyncWrapper(notificacaoController.criar.bind(notificacaoController)))
+    .post('/notificacoes', AuthMiddleware, asyncWrapper(notificacaoController.criar.bind(notificacaoController)))
     .get('/notificacoes', AuthMiddleware, asyncWrapper(notificacaoController.listarMinhas.bind(notificacaoController)))
-    .get('/notificacoes/:id', asyncWrapper(notificacaoController.buscarPorId.bind(notificacaoController)))
+    .get('/notificacoes/:id', AuthMiddleware, asyncWrapper(notificacaoController.buscarPorId.bind(notificacaoController)))
     .patch('/notificacoes/:id/lida', AuthMiddleware, asyncWrapper(notificacaoController.marcarComoLida.bind(notificacaoController)))
     .delete('/notificacoes/:id', AuthMiddleware, asyncWrapper(notificacaoController.deletar.bind(notificacaoController)));
 
