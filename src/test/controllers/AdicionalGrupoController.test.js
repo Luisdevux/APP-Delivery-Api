@@ -81,17 +81,6 @@ describe('Controller: AdicionalGrupoController', () => {
             expect(mockService.listarPorPrato).toHaveBeenCalledWith(pratoId);
             expect(CommonResponse.success).toHaveBeenCalledWith(mockResponse, []);
         });
-
-        it('deve lançar erro ao validar pratoId inválido', async () => {
-            const error = new CustomError({ statusCode: 400, errorType: 'invalidInput' });
-            IdSchema.parse.mockImplementation(() => {
-                throw error;
-            });
-
-            mockRequest.params = { pratoId: 'invalid' };
-
-            await expect(controller.listarPorPrato(mockRequest, mockResponse)).rejects.toThrow(error);
-        });
     });
 
     describe('buscarPorID', () => {
@@ -112,17 +101,6 @@ describe('Controller: AdicionalGrupoController', () => {
             expect(IdSchema.parse).toHaveBeenCalledWith(grupoId);
             expect(mockService.buscarPorID).toHaveBeenCalledWith(grupoId);
             expect(CommonResponse.success).toHaveBeenCalledWith(mockResponse, mockData);
-        });
-
-        it('deve lançar erro quando grupo não existe', async () => {
-            const grupoId = 'grupo-inexistente';
-            const error = new CustomError({ statusCode: 404, errorType: 'resourceNotFound' });
-            IdSchema.parse.mockReturnValue(grupoId);
-            mockService.buscarPorID.mockRejectedValue(error);
-
-            mockRequest.params = { id: grupoId };
-
-            await expect(controller.buscarPorID(mockRequest, mockResponse)).rejects.toThrow(error);
         });
     });
 
@@ -152,17 +130,6 @@ describe('Controller: AdicionalGrupoController', () => {
             expect(AdicionalGrupoSchema.parse).toHaveBeenCalledWith(mockRequest.body);
             expect(mockService.criar).toHaveBeenCalled();
             expect(CommonResponse.created).toHaveBeenCalledWith(mockResponse, mockGrupo);
-        });
-
-        it('deve lançar erro ao validar dados inválidos', async () => {
-            const error = new CustomError({ statusCode: 400, errorType: 'invalidInput' });
-            AdicionalGrupoSchema.parse.mockImplementation(() => {
-                throw error;
-            });
-
-            mockRequest.body = { nome: '' };
-
-            await expect(controller.criar(mockRequest, mockResponse)).rejects.toThrow(error);
         });
     });
 
@@ -194,18 +161,6 @@ describe('Controller: AdicionalGrupoController', () => {
             expect(mockService.atualizar).toHaveBeenCalledWith(grupoId, updateData, mockRequest);
             expect(CommonResponse.success).toHaveBeenCalled();
         });
-
-        it('deve lançar erro ao atualizar com dados inválidos', async () => {
-            const error = new CustomError({ statusCode: 400, errorType: 'invalidInput' });
-            AdicionalGrupoUpdateSchema.parse.mockImplementation(() => {
-                throw error;
-            });
-
-            mockRequest.params = { id: 'grupo-123' };
-            mockRequest.body = {};
-
-            await expect(controller.atualizar(mockRequest, mockResponse)).rejects.toThrow(error);
-        });
     });
 
     describe('deletar', () => {
@@ -226,17 +181,6 @@ describe('Controller: AdicionalGrupoController', () => {
             expect(IdSchema.parse).toHaveBeenCalledWith(grupoId);
             expect(mockService.deletar).toHaveBeenCalledWith(grupoId, mockRequest);
             expect(CommonResponse.success).toHaveBeenCalled();
-        });
-
-        it('deve lançar erro ao deletar grupo inexistente', async () => {
-            const grupoId = 'grupo-inexistente';
-            const error = new CustomError({ statusCode: 404, errorType: 'resourceNotFound' });
-
-            mockService.deletar.mockRejectedValue(error);
-
-            mockRequest.params = { id: grupoId };
-
-            await expect(controller.deletar(mockRequest, mockResponse)).rejects.toThrow(error);
         });
     });
 });

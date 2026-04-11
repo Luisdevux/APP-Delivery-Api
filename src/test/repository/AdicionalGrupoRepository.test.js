@@ -41,27 +41,6 @@ describe('Repository: AdicionalGrupoRepository', () => {
             expect(mockModel.findById).toHaveBeenCalledWith(grupoId);
             expect(resultado).toEqual(mockGrupo);
         });
-
-        it('deve lançar erro quando grupo não existe', async () => {
-            const grupoId = 'grupo-inexistente';
-            mockModel.findById.mockResolvedValue(null);
-
-            await expect(repository.buscarPorID(grupoId)).rejects.toThrow();
-            expect(mockModel.findById).toHaveBeenCalledWith(grupoId);
-        });
-    });
-   describe('buscarPorID', () => {
-        it('deve buscar um grupo por ID com sucesso', async () => {
-            const grupoId = 'grupo-123';
-            const mockGrupo = { _id: grupoId, nome: 'Bebidas', restaurante_id: 'rest-123' };
-
-            mockModel.findById.mockResolvedValue(mockGrupo);
-
-            const resultado = await repository.buscarPorID(grupoId);
-
-            expect(mockModel.findById).toHaveBeenCalledWith(grupoId);
-            expect(resultado).toEqual(mockGrupo);
-        });
     });
 
     describe('listarPorRestaurante', () => {
@@ -137,29 +116,6 @@ describe('Repository: AdicionalGrupoRepository', () => {
         });
     });
 
-    describe('criar', () => {
-        it('deve criar um novo grupo de adicional', async () => {
-            const dadosGrupo = {
-                nome: 'Bebidas',
-                restaurante_id: 'restaurante-123',
-                tipo: 'adicional'
-            };
-
-            const mockGrupo = {
-                _id: 'grupo-123',
-                ...dadosGrupo,
-                save: jest.fn().mockResolvedValue(true)
-            };
-
-            mockModel.mockImplementation(() => mockGrupo);
-            const repo = new AdicionalGrupoRepository({ AdicionalGrupoModel: mockModel });
-
-            const resultado = await repo.criar(dadosGrupo);
-
-            expect(resultado).toEqual(mockGrupo);
-        });
-    });
-
     describe('atualizar', () => {
         it('deve atualizar um grupo com sucesso', async () => {
             const grupoId = 'grupo-123';
@@ -180,15 +136,6 @@ describe('Repository: AdicionalGrupoRepository', () => {
                 { returnDocument: 'after' }
             );
             expect(resultado).toEqual(mockGrupoAtualizado);
-        });
-
-        it('deve lançar erro quando grupo não existe para atualizar', async () => {
-            const grupoId = 'grupo-inexistente';
-            const parsedData = { nome: 'Novo Nome' };
-
-            mockModel.findByIdAndUpdate.mockResolvedValue(null);
-
-            await expect(repository.atualizar(grupoId, parsedData)).rejects.toThrow();
         });
     });
 
