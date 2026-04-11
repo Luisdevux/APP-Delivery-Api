@@ -67,7 +67,7 @@ class AdicionalGrupoBuild {
     }
 
     build() {
-        return this.filtros;
+        return { ...this.filtros };
     }
 }
 

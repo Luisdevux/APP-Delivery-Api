@@ -1,4 +1,4 @@
-import AdicionalGrupoBuild from '../../repository/filters/AdicionalGrupoFilterBuild.js';
+import AdicionalGrupoBuild from '../../../repository/filters/AdicionalGrupoFilterBuild.js';
 import mongoose from 'mongoose';
 
 describe('Filter: AdicionalGrupoBuild - Regras de Negócio', () => {
