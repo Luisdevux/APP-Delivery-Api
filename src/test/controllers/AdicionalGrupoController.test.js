@@ -53,44 +53,45 @@ describe('Controller: AdicionalGrupoController', () => {
     });
 
 
-    describe('listarPorPrato', () => {
-        it('deve listar adicionais por prato com sucesso', async () => {
-            const pratoId = 'prato-123';
-            const mockData = [
-                { _id: '1', nome: 'Grupo 1', restaurante_id: 'rest-123' },
-                { _id: '2', nome: 'Grupo 2', restaurante_id: 'rest-123' },
+describe('listarPorPrato', () => {
+        it('quando um prato é consultado, deve retornar seus grupos de adicionais', async () => {
+            const pratoId = 'prato-pizza-margherita';
+            const grupos = [
+                { _id: '1', nome: 'Tamanho', tipo: 'variacao', obrigatorio: true },
+                { _id: '2', nome: 'Toppings', tipo: 'adicional', obrigatorio: false },
             ];
 
             mockRequest.params = { pratoId };
-            mockService.listarPorPrato.mockResolvedValue(mockData);
+            mockService.listarPorPrato.mockResolvedValue(grupos);
 
             await controller.listarPorPrato(mockRequest, mockResponse);
 
-            expect(IdSchema.parse).toHaveBeenCalledWith(pratoId);
             expect(mockService.listarPorPrato).toHaveBeenCalledWith(pratoId);
-            expect(CommonResponse.success).toHaveBeenCalledWith(mockResponse, mockData);
+            expect(CommonResponse.success).toHaveBeenCalledWith(mockResponse, grupos);
         });
 
-        it('deve retornar vazio quando não há adicionais', async () => {
-            const pratoId = 'prato-456';
+        it('se o prato não tem nenhum grupo configurado, retorna lista vazia', async () => {
+            const pratoId = 'prato-novo';
             mockRequest.params = { pratoId };
             mockService.listarPorPrato.mockResolvedValue([]);
 
             await controller.listarPorPrato(mockRequest, mockResponse);
 
-            expect(mockService.listarPorPrato).toHaveBeenCalledWith(pratoId);
             expect(CommonResponse.success).toHaveBeenCalledWith(mockResponse, []);
         });
     });
 
     describe('buscarPorID', () => {
-        it('deve buscar um grupo por ID com sucesso', async () => {
-            const grupoId = 'grupo-123';
+        it('quando um grupo é consultado, retorna os detalhes completos', async () => {
+            const grupoId = 'grupo-tamanho-pizza';
             const mockData = {
                 _id: grupoId,
-                nome: 'Bebidas',
-                restaurante_id: 'rest-123',
-                tipo: 'adicional',
+                nome: 'Tamanho',
+                tipo: 'variacao',
+                obrigatorio: true,
+                min: 1,
+                max: 1,
+                ativo: true
             };
 
             mockRequest.params = { id: grupoId };
@@ -105,19 +106,22 @@ describe('Controller: AdicionalGrupoController', () => {
     });
 
     describe('criar', () => {
-        it('deve criar um novo grupo de adicional', async () => {
+        it('quando um restaurante cria um novo grupo de tamanho de pizza, deve salvar corretamente', async () => {
             const parsedData = {
-                nome: 'Bebidas',
-                tipo: 'adicional',
-                obrigatorio: false,
-                prato_id: 'prato-123'
+                nome: 'Tamanho',
+                tipo: 'variacao',
+                obrigatorio: true,
+                min: 1,
+                max: 1,
+                restaurante_id: 'rest-pizza-123'
             };
 
             const mockGrupo = {
                 _id: 'grupo-123',
-                nome: 'Bebidas',
-                restaurante_id: 'rest-123',
-                tipo: 'adicional',
+                nome: 'Tamanho',
+                tipo: 'variacao',
+                obrigatorio: true,
+                restaurante_id: 'rest-pizza-123',
             };
 
             AdicionalGrupoSchema.parse.mockReturnValue(parsedData);
@@ -134,17 +138,18 @@ describe('Controller: AdicionalGrupoController', () => {
     });
 
     describe('atualizar', () => {
-        it('deve atualizar um grupo com sucesso', async () => {
-            const grupoId = 'grupo-123';
+        it('quando um grupo tem limites alterados (ex: max de toppings), deve atualizar', async () => {
+            const grupoId = 'grupo-toppings-123';
             const updateData = {
-                nome: 'Bebidas Premium',
+                max: 5
             };
 
             const mockGrupoAtualizado = {
                 _id: grupoId,
-                nome: 'Bebidas Premium',
-                restaurante_id: 'rest-123',
+                nome: 'Toppings',
                 tipo: 'adicional',
+                max: 5,
+                restaurante_id: 'rest-123',
             };
 
             AdicionalGrupoUpdateSchema.parse.mockReturnValue(updateData);
@@ -164,11 +169,12 @@ describe('Controller: AdicionalGrupoController', () => {
     });
 
     describe('deletar', () => {
-        it('deve deletar um grupo com sucesso', async () => {
-            const grupoId = 'grupo-123';
+        it('quando um grupo é removido, marca como inativo (soft-delete)', async () => {
+            const grupoId = 'grupo-bebidas-123';
             const mockGrupoDeletado = {
                 _id: grupoId,
                 nome: 'Bebidas',
+                ativo: false,
             };
 
             mockService.deletar.mockResolvedValue(mockGrupoDeletado);

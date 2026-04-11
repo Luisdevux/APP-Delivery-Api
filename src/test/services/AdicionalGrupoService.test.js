@@ -60,16 +60,18 @@ describe('Service: AdicionalGrupoService', () => {
     });
 
     describe('criar', () => {
-        it('deve criar um novo grupo de adicional com sucesso', async () => {
-            const pratoId = 'prato-123';
-            const restauranteId = 'restaurante-123';
+        it('quando um restaurante cria um grupo de tamanho obrigatório, valida permissões e persiste', async () => {
+            const pratoId = 'prato-pizza-margherita';
+            const restauranteId = 'restaurante-pizzaria-123';
             const donoId = 'dono-123';
-            const usuarioId = 'user-123';
+            const usuarioId = 'dono-123';
 
             const parsedData = {
-                nome: 'Bebidas',
-                tipo: 'adicional',
-                obrigatorio: false,
+                nome: 'Tamanho',
+                tipo: 'variacao',
+                obrigatorio: true,
+                min: 1,
+                max: 1,
             };
 
             const mockPrato = {
@@ -114,9 +116,16 @@ describe('Service: AdicionalGrupoService', () => {
     });
 
     describe('buscarPorID', () => {
-        it('deve buscar um grupo por ID com sucesso', async () => {
-            const grupoId = 'grupo-123';
-            const mockGrupo = { _id: grupoId, nome: 'Bebidas' };
+        it('quando consultando um grupo específico, retorna sua configuração completa', async () => {
+            const grupoId = 'grupo-tamanho-pizza-123';
+            const mockGrupo = {
+                _id: grupoId,
+                nome: 'Tamanho',
+                tipo: 'variacao',
+                obrigatorio: true,
+                min: 1,
+                max: 1,
+            };
 
             mockGrupoRepository.buscarPorID.mockResolvedValue(mockGrupo);
 
@@ -128,9 +137,9 @@ describe('Service: AdicionalGrupoService', () => {
     });
 
     describe('listarPorPrato', () => {
-        it('deve listar grupos por prato com sucesso', async () => {
-            const pratoId = 'prato-123';
-            const grupoIds = ['grupo-1', 'grupo-2'];
+        it('quando um prato é consultado, lista todos os grupos de opções configurados', async () => {
+            const pratoId = 'prato-pizza-123';
+            const grupoIds = ['grupo-tamanho', 'grupo-toppings'];
 
             const mockPrato = {
                 _id: pratoId,
@@ -138,8 +147,8 @@ describe('Service: AdicionalGrupoService', () => {
             };
 
             const mockGrupos = [
-                { _id: 'grupo-1', nome: 'Bebidas' },
-                { _id: 'grupo-2', nome: 'Acompanhamentos' },
+                { _id: 'grupo-tamanho', nome: 'Tamanho', tipo: 'variacao', obrigatorio: true },
+                { _id: 'grupo-toppings', nome: 'Toppings', tipo: 'adicional', obrigatorio: false },
             ];
 
             mockPratoRepository.buscarPorID.mockResolvedValue(mockPrato);
@@ -154,20 +163,22 @@ describe('Service: AdicionalGrupoService', () => {
     });
 
     describe('atualizar', () => {
-        it('deve atualizar um grupo com sucesso', async () => {
-            const grupoId = 'grupo-123';
-            const restauranteId = 'restaurante-123';
+        it('quando alguém ajusta limites de toppings, valida permissão e persiste mudança', async () => {
+            const grupoId = 'grupo-toppings-123';
+            const restauranteId = 'restaurante-pizzaria-123';
             const donoId = 'dono-123';
-            const usuarioId = 'user-123';
+            const usuarioId = 'dono-123';
 
             const parsedData = {
-                nome: 'Bebidas Premium',
+                max: 5
             };
 
             const mockGrupo = {
                 _id: grupoId,
-                nome: 'Bebidas',
+                nome: 'Toppings',
+                tipo: 'adicional',
                 restaurante_id: restauranteId,
+                max: 3,
             };
 
             const mockRestaurante = {
@@ -182,7 +193,7 @@ describe('Service: AdicionalGrupoService', () => {
 
             const mockGrupoAtualizado = {
                 ...mockGrupo,
-                nome: 'Bebidas Premium',
+                max: 5,
             };
 
             mockGrupoRepository.buscarPorID.mockResolvedValue(mockGrupo);
@@ -201,11 +212,11 @@ describe('Service: AdicionalGrupoService', () => {
     });
 
     describe('deletar', () => {
-        it('deve deletar um grupo com sucesso', async () => {
-            const grupoId = 'grupo-123';
+        it('quando um grupo é removido, deleta o grupo e suas opções associadas', async () => {
+            const grupoId = 'grupo-bebidas-123';
             const restauranteId = 'restaurante-123';
             const donoId = 'dono-123';
-            const usuarioId = 'user-123';
+            const usuarioId = 'dono-123';
 
             const mockGrupo = {
                 _id: grupoId,

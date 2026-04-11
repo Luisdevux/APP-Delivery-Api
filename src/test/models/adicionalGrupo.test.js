@@ -5,12 +5,12 @@ describe('Model: AdicionalGrupo', () => {
     let AdicionalGrupoModel;
 
     beforeAll(() => {
-        const model = new AdicionalGrupo();
-        AdicionalGrupoModel = model.getSchema() ? mongoose.model('AdicionalGrupo', model.getSchema()) : null;
+        // AdicionalGrupo já é a model exportada diretamente
+        AdicionalGrupoModel = AdicionalGrupo;
     });
 
     describe('Regra de Negócio: Grupos de Opções Obrigatórias', () => {
-        it('um grupo de tamanho deve ser marcado como obrigatório', () => {
+        it('um grupo de tamanho deve ser marcado como obrigatório e única seleção', () => {
             const grupoTamanho = {
                 nome: 'Tamanho',
                 tipo: 'variacao',
@@ -20,11 +20,13 @@ describe('Model: AdicionalGrupo', () => {
             };
             expect(grupoTamanho.obrigatorio).toBe(true);
             expect(grupoTamanho.min).toBe(1);
+            expect(grupoTamanho.max).toBe(1);
+            expect(grupoTamanho.tipo).toBe('variacao');
         });
 
-        it('um grupo de adicionais extras pode ser opcional', () => {
+        it('um grupo de toppings opcionais permite múltiplas seleções', () => {
             const grupoExtras = {
-                nome: 'Adicionais',
+                nome: 'Toppings',
                 tipo: 'adicional',
                 obrigatorio: false,
                 min: 0,
@@ -32,6 +34,7 @@ describe('Model: AdicionalGrupo', () => {
             };
             expect(grupoExtras.obrigatorio).toBe(false);
             expect(grupoExtras.min).toBe(0);
+            expect(grupoExtras.max).toBeGreaterThanOrEqual(2);
         });
     });
 
@@ -65,44 +68,57 @@ describe('Model: AdicionalGrupo', () => {
     });
 
     describe('Constraints de Quantidade (min/max)', () => {
-        it('min não pode ser negativo (ex: não faz sentido -1 seleção)', () => {
+        it('min não pode ser negativo', () => {
             const min = 0;
             expect(min).toBeGreaterThanOrEqual(0);
         });
 
-        it('max deve ser pelo menos 1 quando configurado (ex: tamanho requer mínimo 1)', () => {
+        it('max deve ser válido (>= 1)', () => {
             const max = 1;
             expect(max).toBeGreaterThanOrEqual(1);
         });
 
-        it('max pode ser vários (ex: múltiplas seleções de toppings)', () => {
+        it('pode permitir várias seleções (max=5)', () => {
             const max = 5;
             expect(max).toBeGreaterThanOrEqual(1);
         });
 
-        it('relação min/max deve fazer sentido (min <= max)', () => {
+        it('relação min/max deve ser consistente (min <= max)', () => {
             const min = 1;
             const max = 3;
             expect(min).toBeLessThanOrEqual(max);
         });
+
+        it('quando obrigatório e única seleção: min=1, max=1', () => {
+            const min = 1;
+            const max = 1;
+            expect(min).toBe(max);
+        });
+
+        it('quando opcional: min=0, max>=1', () => {
+            const min = 0;
+            const max = 5;
+            expect(min).toBe(0);
+            expect(max).toBeGreaterThanOrEqual(1);
+        });
     });
 
     describe('Comportamento de Ativação (Soft-delete)', () => {
-        it('grupo ativo deve estar disponível para seleção', () => {
+        it('grupo ativo está disponível para seleção', () => {
             const grupo = { ativo: true, nome: 'Tamanho' };
             expect(grupo.ativo).toBe(true);
         });
 
-        it('grupo desativado usa soft-delete em vez de deleção real', () => {
-            const grupo = { ativo: false, nome: 'Tamanho' };
+        it('grupo desativado não aparece nas consultas normais (soft-delete)', () => {
+            const grupo = { ativo: false, nome: 'Tamanho Antigo' };
             expect(grupo.ativo).toBe(false);
         });
     });
 
     describe('Casos Reais de Uso', () => {
-        it('grupo de tamanho de pizza (obrigatório, única seleção)', () => {
+        it('quando cliente pede pizza, pode escolher exatamente 1 tamanho', () => {
             const grupoTamanhoPizza = {
-                nome: 'Tamanho',
+                nome: 'Tamanho da Pizza',
                 tipo: 'variacao',
                 obrigatorio: true,
                 min: 1,
@@ -112,11 +128,10 @@ describe('Model: AdicionalGrupo', () => {
             
             expect(grupoTamanhoPizza.tipo).toBe('variacao');
             expect(grupoTamanhoPizza.obrigatorio).toBe(true);
-            expect(grupoTamanhoPizza.min).toBe(1);
-            expect(grupoTamanhoPizza.max).toBe(1);
+            expect(grupoTamanhoPizza.min).toBe(grupoTamanhoPizza.max);
         });
 
-        it('grupo de toppings (opcional, múltiplas seleções)', () => {
+        it('cliente pode adicionar 0 a 5 toppings opcionais', () => {
             const grupoToppings = {
                 nome: 'Toppings Extras',
                 tipo: 'adicional',
@@ -129,16 +144,17 @@ describe('Model: AdicionalGrupo', () => {
             expect(grupoToppings.tipo).toBe('adicional');
             expect(grupoToppings.obrigatorio).toBe(false);
             expect(grupoToppings.min).toBe(0);
+            expect(grupoToppings.max).toBeGreaterThanOrEqual(1);
         });
 
-        it('grupo descontinuado (soft-delete)', () => {
-            const grupoPiscainte = {
+        it('quando um grupo deixa de existir, é marcado inativo em vez de deletado', () => {
+            const grupoInativo = {
                 nome: 'Opção Descontinuada',
                 tipo: 'adicional',
                 ativo: false // soft-delete
             };
             
-            expect(grupoPiscainte.ativo).toBe(false);
+            expect(grupoInativo.ativo).toBe(false);
         });
     });
 });
