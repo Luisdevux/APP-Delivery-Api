@@ -103,6 +103,12 @@ class AuthService {
 
         await this.repository.armazenarTokens(userEncontrado._id, accessToken, refreshtoken);
 
+        // Calcular e atualizar profileComplete se necessário
+        const profileComplete = !!(userEncontrado.cpf && userEncontrado.telefone);
+        if (userEncontrado.profileComplete !== profileComplete) {
+            await this.repository.atualizar(userEncontrado._id, { profileComplete });
+        }
+
         const userLogado = await this.repository.buscarPorID(userEncontrado._id, false);
         const userObject = userLogado.toObject();
 
@@ -110,6 +116,7 @@ class AuthService {
             user: {
                 accessToken,
                 refreshtoken,
+                profileComplete,
                 ...userObject
             }
         };
@@ -255,12 +262,18 @@ class AuthService {
 
         await this.repository.armazenarTokens(id, accesstoken, refreshtoken);
 
-        const userLogado = await this.repository.buscarPorID(id, true);
+        const profileComplete = !!(userEncontrado.cpf && userEncontrado.telefone);
+        if (userEncontrado.profileComplete !== profileComplete) {
+            await this.repository.atualizar(id, { profileComplete });
+        }
+
+        const userLogado = await this.repository.buscarPorID(id, false);
         const userObjeto = userLogado.toObject();
 
         const userComTokens = {
             accesstoken,
             refreshtoken,
+            profileComplete,
             ...userObjeto
         };
 
