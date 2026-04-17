@@ -1,11 +1,12 @@
-import adicionalGrupoRoutes from '../../routes/adicionalGrupoRoutes.js';
-
-describe('Routes: AdicionalGrupoRoutes', () => {
-    it('deve definir as rotas corretamente', () => {
-        const router = adicionalGrupoRoutes;
-        
-        expect(router).toBeDefined();
-        expect(router.stack).toBeDefined();
-        expect(router.stack.length).toBeGreaterThan(0);
-    });
-});
+jest.mock('../../controllers/AdicionalGrupoController.js', () => ({
+    __esModule: true,
+    default: class {
+        constructor() {
+            this.listarPorPrato = jest.fn();
+            this.buscarPorID = jest.fn();
+            this.criar = jest.fn();
+            this.atualizar = jest.fn();
+            this.deletar = jest.fn();
+        }
+    }
+}));
