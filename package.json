@@ -74,9 +74,7 @@
     },
     "testEnvironment": "node",
     "verbose": true,
-    "transformIgnorePatterns": [
-      "/node_modules/(?!uuid)"
-    ],
+    "transformIgnorePatterns": [],
     "roots": [
       "<rootDir>"
     ],
