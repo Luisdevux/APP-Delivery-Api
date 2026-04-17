@@ -10,3 +10,24 @@ jest.mock('../../controllers/AdicionalGrupoController.js', () => ({
         }
     }
 }));
+
+import adicionalGrupoRoutes from '../../routes/adicionalGrupoRoutes.js';
+import AuthMiddleware from '../../middlewares/AuthMiddleware.js';
+
+describe('Routes: AdicionalGrupoRoutes', () => {
+    it('deve definir as rotas corretamente', () => {
+        const router = adicionalGrupoRoutes;
+        const routes = router.stack.filter(layer => layer.route).map(layer => layer.route);
+
+        expect(router).toBeDefined();
+        expect(routes.length).toBe(5);
+
+        const pathNames = routes.map(route => route.path);
+        expect(pathNames).toEqual(
+            expect.arrayContaining([
+                '/adicionais/grupos/prato/:pratoId',
+                '/adicionais/grupos/:id',
+                '/adicionais/grupos',
+            ]),
+        );
+    });
