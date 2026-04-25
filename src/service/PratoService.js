@@ -53,6 +53,11 @@ class PratoService {
         // Verificar se o restaurante existe
         const restaurante = await this.ensureRestauranteExists(parsedData.restaurante_id);
 
+        // Validar se a seção fornecida existe no cardápio do restaurante
+        if (parsedData.secao) {
+            this.ensureSecaoExistsInRestaurante(parsedData.secao, restaurante);
+        }
+
         // Verificar se o usuário é o dono ou admin
         const usuarioLogado = await this.ensureUsuarioExists(req.user_id);
         const donoId = String(restaurante.dono_id._id || restaurante.dono_id);
@@ -70,6 +75,11 @@ class PratoService {
     async atualizar(id, parsedData, req) {
         const prato = await this.ensurePratoExists(id);
         const restaurante = await this.ensureRestauranteExists(prato.restaurante_id);
+
+        // Validar se a nova seção fornecida existe no cardápio do restaurante
+        if (parsedData.secao) {
+            this.ensureSecaoExistsInRestaurante(parsedData.secao, restaurante);
+        }
 
         // Verificar se o usuário é o dono ou admin
         const usuarioLogado = await this.ensureUsuarioExists(req.user_id);
@@ -246,6 +256,18 @@ class PratoService {
                 field: 'Usuário',
                 details: [],
                 customMessage: 'O usuário informado não foi encontrado.',
+            });
+        }
+    }
+
+    ensureSecaoExistsInRestaurante(secao, restaurante) {
+        if (!restaurante.secoes_cardapio || !restaurante.secoes_cardapio.includes(secao)) {
+            throw new CustomError({
+                statusCode: HttpStatusCodes.BAD_REQUEST.code,
+                errorType: 'validationError',
+                field: 'secao',
+                details: [{ path: 'secao', message: `A seção '${secao}' não está cadastrada nas seções do restaurante.` }],
+                customMessage: `A seção '${secao}' não faz parte do cardápio deste restaurante. Adicione-a na configuração do restaurante primeiro.`,
             });
         }
     }
