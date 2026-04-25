@@ -27,3 +27,25 @@ describe('Routes: AvaliacaoRoutes', () => {
             ]),
         );
     });
+
+    it('deve proteger a rota de criação com AuthMiddleware', () => {
+        const router = avaliacaoRoutes;
+        const routes = router.stack.filter(layer => layer.route).map(layer => layer.route);
+
+        const createRoute = routes.find(route => route.path === '/avaliacoes' && route.methods.post);
+        expect(createRoute).toBeDefined();
+        expect(createRoute.stack.some(layer => layer.handle === AuthMiddleware)).toBe(true);
+    });
+
+    it('deve deixar a rota de listagem por restaurante pública', () => {
+        const router = avaliacaoRoutes;
+        const routes = router.stack.filter(layer => layer.route).map(layer => layer.route);
+
+        const listRoute = routes.find(
+            route => route.path === '/avaliacoes/restaurante/:restauranteId' && route.methods.get,
+        );
+
+        expect(listRoute).toBeDefined();
+        expect(listRoute.stack.some(layer => layer.handle === AuthMiddleware)).toBe(false);
+    });
+});
