@@ -190,6 +190,16 @@ const authSchemas = {
             }
         },
         description: "Schema para resposta de introspecção de token"
+    },
+    RespostaGenerica: {
+        type: "object",
+        properties: {
+            message: {
+                type: "string",
+                example: "Ação realizada com sucesso"
+            }
+        },
+        description: "Schema para resposta genérica de sucesso do sistema"
     }
 };
 

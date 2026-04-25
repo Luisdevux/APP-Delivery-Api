@@ -273,6 +273,32 @@ const authRoutes = {
                 500: commonResponses[500]()
             }
         }
+    },
+    "/verificar-email": {
+        get: {
+            tags: ["Auth"],
+            summary: "Verifica o email do usuário",
+            description: "Verifica o endereço de email do usuário a partir de um token enviado para o email.",
+            operationId: "verificarEmail",
+            parameters: [
+                {
+                    name: "token",
+                    in: "query",
+                    description: "Token de verificação enviado por email",
+                    required: true,
+                    schema: {
+                        type: "string",
+                    }
+                }
+            ],
+            responses: {
+                200: commonResponses[200]("#/components/schemas/RespostaGenerica"),
+                400: commonResponses[400](),
+                404: commonResponses[404](),
+                401: commonResponses[401](),
+                500: commonResponses[500]()
+            }
+        }
     }
 };
 
