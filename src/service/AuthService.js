@@ -53,13 +53,24 @@ class AuthService {
         }
 
         // Verificar se a conta é Google-only (sem senha)
-        if (!userEncontrado.senha) {
+        if (!userEncontrado.senha && userEncontrado.authProvider === 'google') {
             throw new CustomError({
                 statusCode: 401,
                 errorType: 'googleOnly',
                 field: 'Senha',
                 details: [],
                 customMessage: 'Esta conta utiliza login com Google. Use o botão "Entrar com Google".'
+            });
+        }
+
+        // Verificar se o email foi confirmado
+        if (!userEncontrado.email_verificado) {
+            throw new CustomError({
+                statusCode: 403,
+                errorType: 'forbidden',
+                field: 'Email',
+                details: [],
+                customMessage: 'Por favor, verifique seu email antes de fazer o login. Confira sua caixa de entrada.'
             });
         }
 
@@ -161,7 +172,8 @@ class AuthService {
                 user = await this.repository.atualizar(userPorEmail._id, {
                     googleId,
                     authProvider: novoProvider,
-                    foto_perfil: userPorEmail.foto_perfil || picture || ''
+                    foto_perfil: userPorEmail.foto_perfil || picture || '',
+                    email_verificado: true // Conta validada pelo Google
                 });
             } else {
                 // Criar novo usuário Google
@@ -173,6 +185,7 @@ class AuthService {
                     authProvider: 'google',
                     foto_perfil: picture || '',
                     profileComplete: false,
+                    email_verificado: true, // Contas Google já vêm validadas
                     senha: null
                 });
             }
@@ -344,6 +357,75 @@ class AuthService {
         }
 
         return { message: 'Senha atualizada com sucesso.' };
+    }
+
+    // Verificar email do usuário usando token
+    async verificarEmail(token) {
+        console.log('Verificação de email - Token recebido:', token);
+
+        // Buscar usuário pelo token de verificação
+        const usuario = await this.repository.buscarPorTokenVerificacao(token);
+
+        console.log('Usuário encontrado:', usuario ? {
+            id: usuario._id,
+            email: usuario.email,
+            token_verificacao_email: usuario.token_verificacao_email,
+            exp_token_verificacao_email: usuario.exp_token_verificacao_email,
+            email_verificado: usuario.email_verificado
+        } : 'null');
+
+        if (!usuario) {
+            throw new CustomError({
+                statusCode: HttpStatusCodes.NOT_FOUND.code,
+                errorType: 'notFound',
+                field: 'Token',
+                details: [],
+                customMessage: 'Token de verificação inválido ou já utilizado.'
+            });
+        }
+
+        // Verificar se o token expirou
+        const dataExpiracao = usuario.get('exp_token_verificacao_email', null, { getters: false });
+        const dataAtual = new Date();
+
+        console.log('   Verificação de expiração:');
+        console.log('  - Data de expiração (original):', dataExpiracao);
+        console.log('  - Data atual:', dataAtual);
+        console.log('  - Token expirado?', dataExpiracao < dataAtual);
+
+        if (dataExpiracao < dataAtual) {
+            console.log('Token expirado, gerando novo token e reenviando email...');
+
+            // Gerar novo token
+            const novoToken = await AuthHelper.generateRandomToken();
+            const novaExpiracao = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 horas
+
+            // Atualizar no banco
+            await this.repository.atualizarTokenVerificacao(usuario._id, novoToken, novaExpiracao);
+
+            // Enviar novo email
+            await EmailService.enviarEmailVerificacao(usuario.email, novoToken, usuario.nome);
+
+            console.log('Novo email de verificação enviado para:', usuario.email);
+
+            throw new CustomError({
+                statusCode: HttpStatusCodes.UNAUTHORIZED.code,
+                errorType: 'tokenExpired',
+                field: 'Token',
+                details: [],
+                customMessage: 'Token de verificação expirado. Enviamos um novo link para seu email. Verifique sua caixa de entrada.'
+            });
+        }
+
+        // Atualizar usuário: marcar email como verificado e limpar token
+        const usuarioAtualizado = await this.repository.atualizarVerificacaoEmail(usuario._id);
+
+        console.log('Email verificado com sucesso para:', usuarioAtualizado.email);
+
+        return {
+            message: 'Email verificado com sucesso!',
+            email: usuarioAtualizado.email
+        };
     }
 }
 

@@ -12,6 +12,7 @@ import { LoginSchema } from '../utils/validators/schemas/zod/LoginSchema.js';
 import { UsuarioSchema } from '../utils/validators/schemas/zod/UsuarioSchema.js';
 import { GoogleLoginSchema } from '../utils/validators/schemas/zod/GoogleLoginSchema.js';
 import { UsuarioIdSchema } from '../utils/validators/schemas/zod/querys/UsuarioQuerySchema.js';
+import { templateSucessoVerificacao, templateErroVerificacao } from '../utils/templates/paginaVerificacao.js';
 import AuthService from '../service/AuthService.js';
 
 class AuthController {
@@ -144,6 +145,27 @@ class AuthController {
 
         return CommonResponse.created(res, usuarioLimpo);
     }
+
+    /**
+     * Verificar email do usuário
+     */
+    verificarEmail = async (req, res) => {
+      const { token } = req.query;
+      const appSchemeUrl = 'dev.fslab.pedidos://home';
+
+      if (!token) {
+        return res.status(400).send(templateErroVerificacao('Token de verificação não fornecido.', appSchemeUrl));
+      }
+
+      try {
+        await this.service.verificarEmail(token);
+        return res.status(200).send(templateSucessoVerificacao(appSchemeUrl));
+      } catch (error) {
+        // Obter uma mensagem de erro mais amigável ou usar a do serviço
+        const detalhe = error.customMessage || error.message || 'Falha ao processar o token. Ele pode ser inválido ou expirado.';
+        return res.status(400).send(templateErroVerificacao(detalhe, appSchemeUrl));
+      }
+    };
 }
 
 export default AuthController;
