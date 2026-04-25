@@ -46,3 +46,21 @@ class AdicionalOpcaoFilterBuild {
             }
             return this;
         }
+    comPreco(minPreco, maxPreco) {
+        if (minPreco !== undefined || maxPreco !== undefined) {
+            this.filtros.preco = {};
+
+            if (isNumeric(minPreco)) {
+                this.filtros.preco.$gte = Number(minPreco);
+            }
+
+            if (isNumeric(maxPreco)) {
+                this.filtros.preco.$lte = Number(maxPreco);
+            }
+
+            if (Object.keys(this.filtros.preco).length === 0) {
+                delete this.filtros.preco;
+            }
+        }
+        return this;
+    }
