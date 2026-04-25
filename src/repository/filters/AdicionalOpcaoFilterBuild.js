@@ -64,3 +64,14 @@ class AdicionalOpcaoFilterBuild {
         }
         return this;
     }
+
+    build() {
+        return { ...this.filtros };
+    }
+}
+
+function isNumeric(value) {
+    return value !== '' && value !== null && value !== undefined && !isNaN(Number(value));
+}
+
+export default AdicionalOpcaoFilterBuild;
